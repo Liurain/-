@@ -1,0 +1,7 @@
+1、修复程序下载地址：
+Microsoft Access Database Engine 2010版：https://www.microsoft.com/en-us/download/details.aspx?id=13255
+Microsoft Access Database Engine 2016版：https://www.microsoft.com/en-us/download/details.aspx?id=54920
+
+2、不清楚应该使用哪个Microsoft Access Database Engine版本时优先尝试2010版本，如若不行请先卸载旧版本再尝试新的版本。
+
+3、根据office安装版本（32位或64位）选择修复程序：没有以“X64”结尾的是32位office使用的修复程序。若不知道本机安装office为32位还是64位，推荐优先选择32位
