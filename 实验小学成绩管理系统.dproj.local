@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2017/12/11 15:41:45.000.072,=C:\Users\Arain\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 15:42:18.000.038,C:\Users\Arain\Documents\Embarcadero\Studio\Projects\Unit1.pas=C:\Users\Arain\Documents\Embarcadero\Studio\Projects\MainWindow.pas</Transaction>
+    <Transaction>2017/12/11 15:42:18.000.038,C:\Users\Arain\Documents\Embarcadero\Studio\Projects\Unit1.dfm=C:\Users\Arain\Documents\Embarcadero\Studio\Projects\MainWindow.dfm</Transaction>
+    <Transaction>2017/12/11 15:45:59.000.297,=C:\Users\Arain\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 15:49:47.000.009,C:\Users\Arain\Documents\Embarcadero\Studio\Projects\Unit1.pas=C:\Users\Arain\Documents\Embarcadero\Studio\Projects\ADOOperate.pas</Transaction>
+    <Transaction>2017/12/11 16:11:00.000.405,C:\Users\Arain\Documents\Embarcadero\Studio\Projects\MainWindow.dfm=H:\Transcripts Management\Transcripts Management System\MainWindow.dfm</Transaction>
+    <Transaction>2017/12/11 16:11:00.000.405,C:\Users\Arain\Documents\Embarcadero\Studio\Projects\MainWindow.pas=H:\Transcripts Management\Transcripts Management System\MainWindow.pas</Transaction>
+    <Transaction>2017/12/11 16:11:03.000.366,C:\Users\Arain\Documents\Embarcadero\Studio\Projects\ADOOperate.pas=H:\Transcripts Management\Transcripts Management System\ADOOperate.pas</Transaction>
+    <Transaction>2017/12/11 16:11:05.000.260,C:\Users\Arain\Documents\Embarcadero\Studio\Projects\Project1.dproj=H:\Transcripts Management\Transcripts Management System\Project1.dproj</Transaction>
+    <Transaction>2017/12/11 22:16:22.000.031,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 22:17:25.000.536,=H:\Transcripts Management\Transcripts Management System\Unit2.pas</Transaction>
+    <Transaction>2017/12/11 22:18:49.000.554,H:\Transcripts Management\Transcripts Management System\Tb_classes.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 22:19:40.000.489,H:\Transcripts Management\Transcripts Management System\Table_classes.pas=H:\Transcripts Management\Transcripts Management System\Tb_classes.pas</Transaction>
+    <Transaction>2017/12/11 22:19:58.000.645,H:\Transcripts Management\Transcripts Management System\Table_class.pas=H:\Transcripts Management\Transcripts Management System\Unit2.pas</Transaction>
+    <Transaction>2017/12/11 22:20:04.000.894,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 22:21:08.000.584,H:\Transcripts Management\Transcripts Management System\Table_course.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 22:23:14.000.226,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 22:23:55.000.909,H:\Transcripts Management\Transcripts Management System\Table_users.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 22:24:11.000.220,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/11 22:24:50.000.474,H:\Transcripts Management\Transcripts Management System\Table_teachers.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/12 14:24:49.000.389,H:\Transcripts Management\Transcripts Management System\Table_teachers.pas=</Transaction>
+    <Transaction>2017/12/12 14:24:53.000.826,H:\Transcripts Management\Transcripts Management System\Table_users.pas=</Transaction>
+    <Transaction>2017/12/12 14:31:58.000.584,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/12 14:32:55.000.028,H:\Transcripts Management\Transcripts Management System\Tbale_scores.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/12 14:33:04.000.048,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/12 14:34:27.000.678,H:\Transcripts Management\Transcripts Management System\Table_assessment.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/17 14:36:11.000.208,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/17 14:36:54.000.430,H:\Transcripts Management\Transcripts Management System\Unit1.pas=H:\Transcripts Management\Transcripts Management System\CkeckData.pas</Transaction>
+    <Transaction>2017/12/17 14:46:08.000.699,H:\Transcripts Management\Transcripts Management System\CkeckData.pas=H:\Transcripts Management\Transcripts Management System\CheckData.pas</Transaction>
+    <Transaction>2017/12/17 21:42:43.000.443,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/17 21:43:30.000.647,H:\Transcripts Management\Transcripts Management System\Table_parameters.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/17 22:48:41.000.314,=H:\Transcripts Management\Transcripts Management System\Unit2.pas</Transaction>
+    <Transaction>2017/12/17 22:50:03.000.341,H:\Transcripts Management\Transcripts Management System\EnterScoreWin.pas=H:\Transcripts Management\Transcripts Management System\Unit2.pas</Transaction>
+    <Transaction>2017/12/17 22:50:03.000.341,H:\Transcripts Management\Transcripts Management System\EnterScoreWin.dfm=H:\Transcripts Management\Transcripts Management System\Unit2.dfm</Transaction>
+    <Transaction>2017/12/17 22:50:20.000.082,H:\Transcripts Management\Transcripts Management System\AdminWin.dfm=H:\Transcripts Management\Transcripts Management System\MainWindow.dfm</Transaction>
+    <Transaction>2017/12/17 22:50:20.000.082,H:\Transcripts Management\Transcripts Management System\AdminWin.pas=H:\Transcripts Management\Transcripts Management System\MainWindow.pas</Transaction>
+    <Transaction>2017/12/18 14:56:51.000.569,=H:\Transcripts Management\Transcripts Management System\Unit3.pas</Transaction>
+    <Transaction>2017/12/18 14:57:10.000.826,H:\Transcripts Management\Transcripts Management System\Unit3.dfm=H:\Transcripts Management\Transcripts Management System\LoginWin.dfm</Transaction>
+    <Transaction>2017/12/18 14:57:10.000.826,H:\Transcripts Management\Transcripts Management System\Unit3.pas=H:\Transcripts Management\Transcripts Management System\LoginWin.pas</Transaction>
+    <Transaction>2017/12/18 16:20:27.000.650,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/18 16:20:39.000.768,H:\Transcripts Management\Transcripts Management System\Unit1.pas=H:\Transcripts Management\Transcripts Management System\Table_user.pas</Transaction>
+    <Transaction>2017/12/22 15:46:08.000.811,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/22 15:46:53.000.631,H:\Transcripts Management\Transcripts Management System\Table.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/26 13:30:23.000.606,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/26 13:31:55.000.460,H:\Transcripts Management\Transcripts Management System\Unit1.pas=H:\Transcripts Management\Transcripts Management System\DataTransform.pas</Transaction>
+    <Transaction>2017/12/26 13:46:50.000.312,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/26 13:47:12.000.593,H:\Transcripts Management\Transcripts Management System\Unit1.pas=H:\Transcripts Management\Transcripts Management System\GlobalData.pas</Transaction>
+    <Transaction>2017/12/27 14:57:39.000.362,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/27 14:58:01.000.802,H:\Transcripts Management\Transcripts Management System\Table_exam.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/27 23:51:55.000.471,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/27 23:52:50.000.963,H:\Transcripts Management\Transcripts Management System\fileOutput.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/27 23:53:09.000.679,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/27 23:53:19.000.810,H:\Transcripts Management\Transcripts Management System\fileInpu.pas=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2017/12/31 00:24:49.000.259,H:\Transcripts Management\Transcripts Management System\fileInput.pas=H:\Transcripts Management\Transcripts Management System\fileInpu.pas</Transaction>
+    <Transaction>2017/12/31 22:48:43.000.379,H:\Transcripts Management\Transcripts Management System\Project1.dproj=H:\Transcripts Management\Transcripts Management System\实验小学成绩管理系统.dproj</Transaction>
+    <Transaction>2018/01/02 00:01:03.000.784,H:\Transcripts Management\Transcripts Management System\Table_scores.pas=H:\Transcripts Management\Transcripts Management System\Tbale_scores.pas</Transaction>
+    <Transaction>2018/01/14 21:37:41.000.890,=H:\Transcripts Management\Transcripts Management System\Unit1.pas</Transaction>
+    <Transaction>2018/01/14 21:38:22.000.567,H:\Transcripts Management\Transcripts Management System\Unit1.pas=H:\Transcripts Management\Transcripts Management System\DatabaseManage.pas</Transaction>
+  </Transactions>
+	<ProjectSortOrder AutoSort="0" SortType="0">
+    <File Path="AdminWin.pas"/>
+    <File Path="AdminWin.dfm"/>
+    <File Path="ADOOperate.pas"/>
+    <File Path="Table_classes.pas"/>
+    <File Path="Table_class.pas"/>
+    <File Path="Table_course.pas"/>
+    <File Path="Table_scores.pas"/>
+    <File Path="Table_assessment.pas"/>
+    <File Path="CheckData.pas"/>
+    <File Path="Table_parameters.pas"/>
+    <File Path="EnterScoreWin.pas"/>
+    <File Path="EnterScoreWin.dfm"/>
+    <File Path="LoginWin.pas"/>
+    <File Path="LoginWin.dfm"/>
+    <File Path="Table_users.pas"/>
+    <File Path="Table.pas"/>
+    <File Path="DataTransform.pas"/>
+    <File Path="GlobalData.pas"/>
+    <File Path="Table_exam.pas"/>
+    <File Path="fileOutput.pas"/>
+    <File Path="fileInput.pas"/>
+    <File Path="DatabaseManage.pas"/>
+  </ProjectSortOrder>
+</BorlandProject>
