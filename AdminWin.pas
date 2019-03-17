@@ -59,8 +59,8 @@ type
     Label10: TLabel;
     Label11: TLabel;
     par_averLi_base_Edit: TEdit;
-    par_dev_base_Edit: TEdit;
-    par_greatRatio_base_Edit: TEdit;
+    par_dev_Edit: TEdit;
+    par_greatRatio_Edit: TEdit;
     par_averWen_base_Edit: TEdit;
     par_submit_btn: TButton;
     DataSource: TDataSource;
@@ -134,10 +134,7 @@ type
     user_power_RG: TRadioGroup;
     Label33: TLabel;
     inputPage: TTabSheet;
-    Label37: TLabel;
-    term_ComboBox: TComboBox;
-    WordApplication1: TWordApplication;
-    Panel3: TPanel;
+    fileOutputPanel: TPanel;
     Label23: TLabel;
     Label24: TLabel;
     Label25: TLabel;
@@ -146,7 +143,7 @@ type
     report_type_ComboBox: TComboBox;
     report_grade_ComboBox: TComboBox;
     report_classID_ComboBox: TComboBox;
-    report_course_ComboBox: TComboBox;
+    report_courseType_ComboBox: TComboBox;
     report_exam_ComboBox: TComboBox;
     promptPanel: TPanel;
     promptLabel: TLabel;
@@ -190,6 +187,31 @@ type
     input_exam_ComboBox: TComboBox;
     Label41: TLabel;
     par_grade_ComboBox: TComboBox;
+    Label43: TLabel;
+    par_greatWeight_Edit: TEdit;
+    Label44: TLabel;
+    par_inferiorWeight_Edit: TEdit;
+    Label45: TLabel;
+    stu_stuNum_Edit: TEdit;
+    fileprint_CheckBox: TCheckBox;
+    Label46: TLabel;
+    report_Filetype_ComboBox: TComboBox;
+    Label47: TLabel;
+    report_courseName_ComboBox: TComboBox;
+    report_outPutLimits_ComboBox: TComboBox;
+    Label48: TLabel;
+    Label49: TLabel;
+    par_averWenNo_Edit: TEdit;
+    Label50: TLabel;
+    term_ComboBox: TComboBox;
+    Label37: TLabel;
+    par_averLiYes_Edit: TEdit;
+    Label51: TLabel;
+    Label52: TLabel;
+    Label53: TLabel;
+    par_averWenYes_Edit: TEdit;
+    Label54: TLabel;
+    par_averLiNo_Edit: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure class_submit_btnClick(Sender: TObject);
 
@@ -232,6 +254,15 @@ type
     procedure database_submit_btnClick(Sender: TObject);
     procedure class_grade_ComboBoxChange(Sender: TObject);
     procedure input_type_ComboBoxChange(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure examName_EditClick(Sender: TObject);
+    procedure report_exam_ComboBoxChange(Sender: TObject);
+    procedure report_courseType_ComboBoxChange(Sender: TObject);
+    procedure report_grade_ComboBoxChange(Sender: TObject);
+    procedure report_Filetype_ComboBoxChange(Sender: TObject);
+    procedure report_outPutLimits_ComboBoxChange(Sender: TObject);
+    procedure term_ComboBoxChange(Sender: TObject);
+
 
   private
     check : TCheckData;
@@ -261,14 +292,27 @@ type
     { Public declarations }
   end;
 
-var
-  Form1: TForm1;
+//var
+//  Form1: TForm1;
 
 implementation
 
 {$R *.dfm}
 
 {***********************************窗体设置***********************************}
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  try
+    fileOutput.wordApp.quit;
+    fileOutput.ExcelApp.quit;
+  except
+  end;
+
+  if ADOOperate.ADOConn.Connected  then  ADOOperate.ADOConn.Close;
+
+//  halt;                   //退出整个程序
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   check := TCheckData.Create;
@@ -278,7 +322,7 @@ begin
   user := Tb_users.Create;
   exam := Tb_exam.Create;
 
-  promptPanel.SetBounds(form1.Width,form1.height,0,0);
+  promptPanel.SetBounds(Width,height,0,0);
   promptPanel.Visible := false;
 
   AdminPage.TabVisible := false;
@@ -297,11 +341,11 @@ end;
 
 procedure TForm1.FormResize(Sender: TObject);
 begin
-  pageControl1.Height := form1.Height;
+  pageControl1.Height := Height;
 
-  PageControl2.SetBounds(pageControl1.Width, 0, (form1.Width-pageControl1.Width), form1.Height);
-  DBGrid1.SetBounds(10,2,PageControl2.Width-20,PageControl2.Height-20);
-  Memo1.SetBounds(10,2,PageControl2.Width-20,PageControl2.Height-20);
+  PageControl2.SetBounds(pageControl1.Width, 0, (Width-pageControl1.Width)-5, Height-10);
+  DBGrid1.SetBounds(0,0,PageControl2.Width-20,PageControl2.Height-50);
+  Memo1.SetBounds(0,0,PageControl2.Width-20,PageControl2.Height-50);
 end;
 
 {
@@ -349,8 +393,14 @@ var
   averWenTop1 :real;           //文科学科评定为B级别，高于年级平均分的最大分数
   averLiBase1 : real;          //理科学科评定为B级别，低于年级平均分的最大分数
   averLiTop1 : real;           //理科学科评定为B级别，高于年级平均分的最大分数
+  averWenNo : real;
+  averWenYes : real;
+  averLiNo : real;
+  averLiYes : real;
   dev1 : real;                 //标准差不大于该参数评为A、小于评委C
   greatRatio1 : real;          //优生率高于该百分比评为A、小于该百分比评委C
+  greatWeight : real;
+  inferiorWeight : real;
   grade : integer;
 begin
   parameter := Tb_parameters.Create;
@@ -360,13 +410,20 @@ begin
   averWenTop1 := check.par(par_averWen_top_Edit.Text, flag);
   averLiBase1 := check.par(par_averLi_base_Edit.Text, flag);
   averLiTop1 := check.par(par_averLi_top_Edit.Text, flag);
-  dev1 := check.par(par_dev_base_Edit.Text, flag);
-  greatRatio1 := check.par(par_greatRatio_base_Edit.Text, flag);
+  averWenNo := check.par(par_averWenNo_Edit.Text, flag);
+  averWenYes := check.par(par_averWenYes_Edit.Text, flag);
+  averLiNo := check.par(par_averLiNo_Edit.Text, flag);
+  averLiYes := check.par(par_averLiYes_Edit.Text, flag);
+  dev1 := check.par(par_dev_Edit.Text, flag);
+  greatRatio1 := check.par(par_greatRatio_Edit.Text, flag);
+  greatWeight := check.par(par_greatWeight_Edit.Text, flag);
+  inferiorWeight := check.par(par_inferiorWeight_Edit.Text, flag);
   grade := check.grage(par_grade_ComboBox.ItemIndex, flag);
 
   if flag then
   begin
-    parameter.changePar(averWenBase1, averWenTop1, averLiBase1, averLiTop1, dev1, greatRatio1,grade);
+    parameter.changePar(averWenBase1, averWenTop1, averLiBase1, averLiTop1,averWenNo,averWenYes,averLiNo,averLiYes, dev1,
+        greatRatio1,greatWeight,inferiorWeight,grade);
     parameter.getGradePar(ADOQuery);     //表示获取1-9年级
   end else begin
     showmessage('参数设置有误，请参照参数设置说明设置参数');
@@ -385,7 +442,6 @@ end;
 procedure TForm1.initInputPanel;
 var
   examName : string;        //考试名称
-  term : string;            //考试所在学期
 begin
   PageControl2.ActivePage := TextSheet;
 
@@ -394,8 +450,7 @@ begin
   while not ADOQuery.eof do
   begin
     examName := ADOQuery.FieldByName('考试名称').AsString;
-    term := ADOQuery.FieldByName('学期').AsString;
-    input_exam_ComboBox.Items.Add(examName+'_'+term);
+    input_exam_ComboBox.Items.Add(examName);
     ADOQuery.Next;
   end;
 
@@ -411,20 +466,23 @@ end;
 
 procedure TForm1.initOutputPanel;
 var
-  i : integer;
   examName : string;        //考试名称
-  term : string;            //考试所在学期
+//  term : string;            //考试所在学期
+
   courseList : TStringList;
+  i : integer;
+
 begin
   PageControl2.ActivePage := TextSheet;
   Memo1.Lines.Clear;
-  Memo1.Lines.Append('Word导出文件:');
-  Memo1.Lines.Append('    期末评估表           ：科目');
-  Memo1.Lines.Append('    考试评估表           ：考试名称、科目');
-  Memo1.Lines.Append('    学生成绩统计表    ：年级、班号');
-  Memo1.Lines.Append('    单科成绩表           ：考试、年级、班号、科目');
-  Memo1.Lines.Append('Excel导出文件:');
+//  Memo1.Lines.Append('Word导出文件:');
+//  Memo1.Lines.Append('    期末评估表           ：科目');
+//  Memo1.Lines.Append('    考试评估表           ：考试名称、科目');
+//  Memo1.Lines.Append('    学生成绩统计表    ：年级、班号');
+//  Memo1.Lines.Append('    单科成绩表           ：考试、年级、班号、科目');
+//  Memo1.Lines.Append('Excel导出文件:');
 
+   //首先获取所有年级所有课程放到Combobox里面
   courseList := TStringList.Create;
   courseList.Sorted := true;
   courseList.Duplicates := dupIgnore;  //如有重复值则放弃
@@ -437,7 +495,8 @@ begin
       ADOQuery.Next;
     end;
   end;
-  report_course_ComboBox.Items.Assign(courseList);
+  report_courseName_ComboBox.Clear;
+  report_courseName_ComboBox.Items.Assign(courseList);
   courseList.Free;
 
   exam.selectExam(ADOQuery);
@@ -445,21 +504,29 @@ begin
   while not ADOQuery.eof do
   begin
     examName := ADOQuery.FieldByName('考试名称').AsString;
-    term := ADOQuery.FieldByName('学期').AsString;
-    report_exam_ComboBox.Items.Add(examName+'_'+term);
+    report_exam_ComboBox.Items.Add(examName);
     ADOQuery.Next;
   end;
 
-  report_type_ComboBox.ItemIndex := -1;
+  report_Filetype_ComboBox.ItemIndex := -1;
   report_exam_ComboBox.ItemIndex := -1;
-  report_course_ComboBox.ItemIndex := -1;
+  report_courseType_ComboBox.ItemIndex := -1;
   report_grade_ComboBox.ItemIndex := -1;
   report_classID_ComboBox.ItemIndex := -1;
+  report_outPutLimits_ComboBox.ItemIndex := -1;
+  report_courseName_ComboBox.ItemIndex := -1;
 
+  report_Filetype_ComboBox.Enabled := false;
   report_exam_ComboBox.Enabled := false;
-  report_course_ComboBox.Enabled := false;
+  report_courseType_ComboBox.Enabled := false;
   report_grade_ComboBox.Enabled := false;
   report_classID_ComboBox.Enabled := false;
+  report_outPutLimits_ComboBox.Enabled := false;
+  report_courseName_ComboBox.Enabled := false;
+
+  visual_CheckBox.Checked := false;
+  fileprint_CheckBox.Checked := false;
+
   report_classID_ComboBox.Clear;
 end;
 
@@ -517,33 +584,7 @@ begin
   PageControl2.ActivePage := TabSheet;
   ADOQuery.Active := false;
 
-//  gradeList := TStringList.Create;
-//  courseList := TStringList.Create;
-//  courseField := TStringField.Create(ADOQuery);
-//  gradeField := TStringField.Create(ADOQuery);
-//
-//  with gradeField do
-//  begin
-//    FieldName := '年级';
-//    Size := 12;
-//    Required := True; {　必填字段　}
-////    DataSet := ClientDataSet1;
-//  end;
-//
-//  ADOQuery.Fields.Add(gradeField);
-//  ADOQuery.Fields.Add(courseField);
-//
-//  count := course.getAllCourse(courseList,gradeList);
-//  for I := 0 to count-1 do
-//  begin
-////    rec[1] := gradeList[i];
-////    rec[2] := courseList[i];
-//
-////    ADOQuery.AppendRecord([gradeList[i],courseList[i]]);
-//  end;
-////  ADOQuery.ClearFields;
-////  ADOQuery.Append;
-//  DBGrid1.Refresh;
+  course.getAllCourse(ADOQuery);
 
   course_grade_ComboBox.ItemIndex := -1;
   course_classID_ComboBox.ItemIndex := -1;
@@ -611,12 +652,13 @@ begin
   ADOQuery.Active := false;
 
   examName_Edit.Text := '';
-  term_ComboBox.ItemIndex := -1;
+  examName_Edit.Font.Color :=  clblack;
+//  term_ComboBox.ItemIndex := -1;
   examTime_Edit.Text := '';
   exam_grade_RG.ItemIndex := -1;
 
   examName_Edit.Enabled := false;
-  term_ComboBox.Enabled := false;
+//  term_ComboBox.Enabled := false;
   examTime_Edit.Enabled := false;
   exam_grade_RG.Enabled := false;
 
@@ -686,8 +728,14 @@ begin
   par_averWen_top_Edit.Text     := ADOQuery.FieldByName('文科平均分上界').AsString;
   par_averLi_base_Edit.Text     := ADOQuery.FieldByName('理科平均分下界').AsString;
   par_averLi_top_Edit.Text      := ADOQuery.FieldByName('理科平均分上界').AsString;
-  par_dev_base_Edit.Text        := ADOQuery.FieldByName('标准差评估差值').AsString;
-  par_greatRatio_base_Edit.Text := ADOQuery.FieldByName('优生率评估差值').AsString;
+  par_averWenNo_Edit.Text       := ADOQuery.FieldByName('文科均分否决').AsString;
+  par_averWenYes_Edit.Text      := ADOQuery.FieldByName('文科均分肯定').AsString;
+  par_averLiNo_Edit.Text        := ADOQuery.FieldByName('理科均分否决').AsString;
+  par_averLiYes_Edit.Text       := ADOQuery.FieldByName('理科均分肯定').AsString;
+  par_dev_Edit.Text             := ADOQuery.FieldByName('标准差评估差值').AsString;
+  par_greatRatio_Edit.Text      := ADOQuery.FieldByName('优生率评估差值').AsString;
+  par_greatWeight_Edit.Text     := ADOQuery.FieldByName('优生占比').AsString;
+  par_inferiorWeight_Edit.Text  := ADOQuery.FieldByName('学困占比').AsString;
 end;
 
 procedure TForm1.database_MenuClick(Sender: TObject);
@@ -760,6 +808,7 @@ end;
 procedure TForm1.class_submit_btnClick(Sender: TObject);
 var
   flag : boolean;
+  mes : string;
 begin
   flag := true;
 
@@ -775,15 +824,20 @@ begin
         showmessage('请选择您想要进行的操作（增加/删除/修改）');
       end;
       0:begin   //增加
-       classes.addClass(ADOQuery);
+       classes.addClass();
       end;
       1:begin   //修改
-        classes.changeClass(ADOQuery);
+        classes.changeClass();
       end;
       2:begin   //删除
-        classes.delClass(ADOQuery);
+        mes := '此操作将会删除该班级内学生的全部信息，是否继续？';
+        if MessageBox(0, PWideChar(mes), '操作选择', MB_OKCANCEL + MB_ICONQUESTION) = ID_OK then
+        begin
+          classes.delClass();
+        end;
       end;
     end;
+    classes.selectByGrade(ADOQuery,check.grage(class_grade_ComboBox.ItemIndex, flag));
     getInfoByGrade(class_classID_ComboBox, classes.grade);
     ADOQuery.Active := true;
   end;
@@ -819,7 +873,7 @@ begin
       course_courseName_Edit.Enabled := true;
       course_classID_ComboBox.Enabled := true;
       course_teacher_Edit.Enabled := true;
-      course_courseType_ComboBox.Enabled := true;
+      course_courseType_ComboBox.Enabled := false;
     end;
     2:begin      //删除
       course_grade_ComboBox.Enabled := true;
@@ -835,9 +889,7 @@ begin
   flag := true;
   course.grade := check.grage(course_grade_ComboBox.ItemIndex, flag);
   course.courseName := check.courseName(course_CourseName_Edit.text, flag);
-  course.classID := check.classID(course_classID_ComboBox.text, flag);
   course.courseType := check.courseType(course_courseType_ComboBox.Text, flag);
-  course.teacher := course_teacher_Edit.text;
 
   if flag then
   begin
@@ -846,13 +898,15 @@ begin
         showmessage('请选择您想要进行的操作（增加/删除/修改）');
       end;
       0:begin   //增加
-       course.addCourse(ADOQuery);
+       course.addCourse();
       end;
       1:begin   //修改
-        course.changeCourse(ADOQuery);
+        course.classID := check.classID(course_classID_ComboBox.text, flag);
+        course.teacher := course_teacher_Edit.text;
+        course.changeCourse();
       end;
       2:begin   //删除
-        course.delCourse(ADOQuery);
+        course.delCourse();
       end;
     end;
     course.getCourseByGrade(ADOQuery, course.grade);
@@ -869,10 +923,10 @@ begin
   tb_stu.classID := check.classID(stu_classID_ComboBox.Text,flag);
   if flag then
   begin
+    stu_stuNum_Edit.Text := inttostr(classes.getStuNum(tb_stu.classID));
     tb_stu.getStu(ADOQuery);
     if stu_operate_RG.ItemIndex = 0 then
     begin
-      stu_stuID_Edit.Text := stu_classID_ComboBox.Text;
       stu_stuID_Edit.SetFocus;
     end;
   end;
@@ -923,18 +977,19 @@ begin
         showmessage('请选择您想要进行的操作（增加/删除/修改）');
       end;
       0:begin   //增加
-        tb_stu.addStu(ADOQuery);
+        tb_stu.addStu();
       end;
       1:begin   //修改
-        tb_stu.changeStu(ADOQuery);
+        tb_stu.changeStu();
       end;
       2:begin   //删除
-        tb_stu.delStu(ADOQuery);
+        tb_stu.delStu();
       end;
     end;
     tb_stu.getStu(ADOQuery);
   end;
 end;
+
 
 {********************************管理员信息修改********************************}
 procedure TForm1.admin_submit_btnClick(Sender: TObject);
@@ -974,11 +1029,13 @@ begin
   case exam_operate_RG.ItemIndex of
     0:begin      //增加
       examName_Edit.Enabled := true;
-      term_ComboBox.Enabled := true;
+//      term_ComboBox.Enabled := true;
       examTime_Edit.Enabled := true;
       exam_grade_RG.Enabled := true;
-      examName_Edit.Text := '';
       examTime_Edit.Text := '';
+
+      examName_Edit.Text := '请填写尽量简短的汉字';
+      examName_Edit.Font.Color :=  clSilver;
     end;
     1:begin      //修改
       examTime_Edit.Enabled := true;
@@ -987,6 +1044,12 @@ begin
     2:begin      //删除
     end;
   end;
+end;
+
+procedure TForm1.examName_EditClick(Sender: TObject);
+begin
+  examName_Edit.Text := '';
+  examName_Edit.Font.Color := clblack;
 end;
 
 procedure TForm1.exam_grade_RGClick(Sender: TObject);
@@ -1095,18 +1158,18 @@ begin
   end;
 
   exam.examName := examName_Edit.Text;
-  exam.term := term_ComboBox.Text;
+//  exam.term := term_ComboBox.Text;
   exam.examDate := examTime_Edit.Text;
   exam.examGrade := examGrade;
   case exam_operate_RG.ItemIndex of
     0:begin      //增加
-      exam.addExam(ADOQuery);
+      exam.addExam();
     end;
     1:begin      //修改
-      exam.changeExam(ADOQuery);
+      exam.changeExam();
     end;
     2:begin      //删除
-      exam.delExam(ADOQuery);
+      exam.delExam(true);
     end;
   end;
   exam.selectExam(ADOQuery);
@@ -1258,6 +1321,116 @@ end;
 
 
 {***********************************文件导出***********************************}
+procedure TForm1.report_courseType_ComboBoxChange(Sender: TObject);
+var
+  allCourse : boolean;
+begin
+//判断是全科还是单科
+  if comparestr('全科',report_courseType_ComboBox.Text) = 0 then
+  begin
+    allCourse := true;
+  end else if comparestr('单科',report_courseType_ComboBox.Text) = 0 then
+  begin
+    allCourse := false;
+  end else begin
+    showmessage('科目类型错误');
+  end;
+
+  if allCourse then       //全科
+  begin
+    report_courseName_ComboBox.ItemIndex := -1;
+    report_courseName_ComboBox.Enabled := false;
+    if (comparestr('登分表',report_type_ComboBox.Text) = 0) then
+    begin
+      if (comparestr('Word',report_Filetype_ComboBox.Text) = 0) then
+      begin
+        showmessage('全科登分表不支持输出word文件，文件类型自动调整为Excel。');
+      end;
+      report_Filetype_ComboBox.Enabled := false;
+      report_Filetype_ComboBox.ItemIndex := 1;      //1表示Excel
+    end;
+
+    if (comparestr('成绩表',report_type_ComboBox.Text) = 0) then
+    begin
+      if (comparestr('Word',report_Filetype_ComboBox.Text) = 0) then
+      begin
+        showmessage('全科成绩表不支持输出word文件，文件类型自动调整为Excel。');
+      end;
+      report_Filetype_ComboBox.Enabled := false;
+      report_Filetype_ComboBox.ItemIndex := 1;      //1表示Excel
+    end;
+  end else begin         //单科
+    if (comparestr('登分表',report_type_ComboBox.Text) <> 0) then
+    begin
+      report_courseName_ComboBox.Enabled := true;
+    end;
+    report_Filetype_ComboBox.Enabled := true;
+  end;
+end;
+
+procedure TForm1.report_exam_ComboBoxChange(Sender: TObject);
+begin
+//  report_courseName_ComboBox.SetFocus;    //report_courseName_ComboBox中有所有年级课程
+end;
+
+procedure TForm1.report_Filetype_ComboBoxChange(Sender: TObject);
+begin
+  if  report_type_ComboBox.ItemIndex <> -1 then      //输出文件种类选好了
+  begin
+    report_courseType_ComboBox.Enabled := true;
+  end;
+end;
+
+procedure TForm1.report_grade_ComboBoxChange(Sender: TObject);
+var
+  ADOQuery1 : TADOQuery;
+  grade : integer;
+begin
+  ADOQuery1 := TADOQuery.Create(nil);
+  grade := report_grade_ComboBox.ItemIndex+1;
+//填充班号
+  report_classID_ComboBox.Items.Clear;
+  classes.selectByGrade(ADOQuery1, grade);
+  while not ADOQuery1.eof do
+  begin
+    report_classID_ComboBox.Items.Add(ADOQuery1.FieldByName('班号').AsString);
+    ADOQuery1.Next;
+  end;
+//更新课程名称
+  report_courseName_ComboBox.Clear;
+  course.getCourseByGrade(ADOQuery1, grade);
+  while not ADOQuery1.eof do
+  begin
+    report_courseName_ComboBox.Items.Add(ADOQuery1.FieldByName('课程名称').AsString);
+    ADOQuery1.Next;
+  end;
+end;
+
+procedure TForm1.report_outPutLimits_ComboBoxChange(Sender: TObject);
+var
+  outFileFlag : integer;        //0全校、1全年级、2某一班级
+begin
+  outFileFlag := report_outPutLimits_ComboBox.ItemIndex;
+  case outFileFlag of
+    0: begin
+      report_grade_ComboBox.ItemIndex := -1;
+      report_grade_ComboBox.Enabled := false;
+      report_classID_ComboBox.ItemIndex := -1;
+      report_classID_ComboBox.Enabled := false;
+    end;
+    1: begin
+      report_grade_ComboBox.Enabled := true;
+      report_classID_ComboBox.ItemIndex := -1;
+      report_classID_ComboBox.Enabled := false;
+    end;
+    2: begin
+      report_grade_ComboBox.Enabled := true;
+      report_classID_ComboBox.Enabled := true;
+    end;
+  end;
+
+end;
+
 procedure TForm1.report_submit_btnClick(Sender: TObject);
 var
   output1 : output;
@@ -1265,106 +1438,448 @@ var
 
   exam : string;
   course : string;
+  grade : integer;
   classID : string;
+
+  i : integer;
 begin
-  promptPanel.SetBounds(round((form1.Width-promptLabel.Width)/2),
-      round((form1.Height-promptLabel.Height)/2),promptLabel.Width,promptLabel.Height);
+//检查参数配置的完整性
+  for i:=0 to fileOutputPanel.ControlCount-1 do
+  begin
+    if (fileOutputPanel.Controls[i] is TComboBox) and
+      (fileOutputPanel.Controls[i].Enabled) then
+    begin
+      if TComboBox(fileOutputPanel.Controls[i]).ItemIndex = -1 then
+      begin
+        showMessage('数据配置不完整，请检查参数配置。');
+        exit;
+      end;
+    end;
+  end;
+
+//显示提示信息，准备导出文件
+  promptPanel.SetBounds(round((Width-promptLabel.Width)/2),
+      round((Height-promptLabel.Height)/2),promptLabel.Width,promptLabel.Height);
   promptLabel.SetBounds(0,0,promptPanel.Width,promptPanel.Height);
   promptLabel.Caption := '数据导出中，请稍后...';
   promptPanel.Visible := true;
   promptPanel.BringToFront;
 
+//根据参数导出文件
   output1 := output.create;
   output1.isVisual(visual_CheckBox.Checked);
+  output1.isfilePrint(fileprint_CheckBox.Checked);
   assessment := Tb_assessment.Create;
 
   case report_type_ComboBox.ItemIndex of
-    0:begin   //期末评估(word)
-      course := report_course_ComboBox.Text;
-      assessment.createReport('期末_上',course);
-      assessment.createReport('期末_下',course);
-      output1.finalReport(course);
+    0: begin    //登分表
+      case report_Filetype_ComboBox.ItemIndex of
+        0:begin                                                     //word
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                 //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {登分表、word、全科、全校}
+                end;
+                1:begin                                             //全年级
+                  {登分表、word、全科、全年级}
+                end;
+                2:begin                                             //班级
+                  {登分表、word、全科、班级}
+                end;
+              end;
+            end;
+            1:begin                                                 //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {登分表、word、单科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  output1.stat_word_aCourse_school();
+                end;
+                1:begin                                             //全年级
+                  {登分表、word、单科、全年级}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  output1.stat_word_aCourse_grade(report_grade_ComboBox.ItemIndex + 1);
+                end;
+                2:begin                                             //班级
+                  {登分表、word、单科、班级}
+                  output1.stat_word_aCourse_class(report_classID_ComboBox.text);
+                end;
+              end;
+            end;
+          end;
+        end;
+        1:begin                                                    //excel
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {登分表、excel、全科、全校}
+                  output1.stat_Excel_allCourse_school();
+                end;
+                1:begin                                            //全年级
+                  {登分表、excel、全科、全年级}
+                  output1.stat_Excel_allCourse_grade(report_grade_ComboBox.ItemIndex + 1);
+                end;
+                2:begin                                            //班级
+                  {登分表、excel、全科、班级}
+                  output1.stat_excel_allCourse_class(report_classID_ComboBox.text);
+                end;
+              end;
+            end;
+            1:begin                                                //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {登分表、excel、单科、全校}
+                  output1.stat_Excel_aCourse_school();
+                end;
+                1:begin                                            //全年级
+                  {登分表、excel、单科、全年级}
+                  output1.stat_Excel_aCourse_grade(report_grade_ComboBox.ItemIndex + 1);
+                end;
+                2:begin                                            //班级
+                  {登分表、excel、单科、班级}
+                  output1.stat_excel_aCourse_class(report_classID_ComboBox.text);
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
     end;
-    1:begin   //考试评估(word)
-      exam := report_exam_ComboBox.Text;
-      course := report_course_ComboBox.Text;
-      assessment.createReport(exam,course);
-      output1.examReport(exam,course);
+    1: begin   //成绩表
+      case report_Filetype_ComboBox.ItemIndex of
+        0:begin                                                     //word
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                 //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {成绩表、word、全科、全校}
+                end;
+                1:begin                                             //全年级
+                  {成绩表、word、全科、全年级}
+                end;
+                2:begin                                             //班级
+                  {成绩表、word、全科、班级}
+                end;
+              end;
+            end;
+            1:begin                                                 //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {成绩表、word、单科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_word_aCourse_school(course , exam);
+                end;
+                1:begin                                             //全年级
+                  {成绩表、word、单科、全年级}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  grade := report_grade_ComboBox.ItemIndex + 1;
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_word_aCourse_grade(grade, course , exam);
+                end;
+                2:begin                                             //班级
+                  {成绩表、word、单科、班级}
+                  classID := report_classID_ComboBox.text;
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_word_aCourse_class(classID, course , exam);
+                end;
+              end;
+            end;
+          end;
+        end;
+        1:begin                                                    //excel
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {成绩表、excel、全科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_Excel_allCourse_school(exam);
+                end;
+                1:begin                                            //全年级
+                  {成绩表、excel、全科、全年级}
+                  grade := report_grade_ComboBox.ItemIndex + 1;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_Excel_allCourse_grade(grade, exam);
+                end;
+                2:begin                                            //班级
+                  {成绩表、excel、全科、班级}
+                  classID := report_classID_ComboBox.text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_Excel_allCourse_class(classID,exam);
+                end;
+              end;
+            end;
+            1:begin                                                //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {成绩表、excel、单科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_Excel_aCourse_school(course, exam);
+                end;
+                1:begin                                            //全年级
+                  {成绩表、excel、单科、全年级}
+                  grade := report_grade_ComboBox.ItemIndex + 1;
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_Excel_aCourse_grade(grade, course , exam);
+                end;
+                2:begin                                            //班级
+                  {成绩表、excel、单科、班级}
+                  classID := report_classID_ComboBox.text;
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.score_Excel_aCourse_class(classID, course , exam);
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
     end;
-    2:begin   //学生成绩统计表(word)
-      classID := report_classID_ComboBox.Text;
-      output1.roster(classID,'','');
+    2: begin     //期末评估
+      case report_Filetype_ComboBox.ItemIndex of
+        0:begin                                                     //word
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                 //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {期末评估、word、全科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  exam := report_exam_ComboBox.Text;
+                  output1.finalExam_word_allCourse_school(exam);
+                end;
+                1:begin                                             //全年级
+                  {期末评估、word、全科、全年级}
+                end;
+                2:begin                                             //班级
+                  {期末评估、word、全科、班级}
+                end;
+              end;
+            end;
+            1:begin                                                 //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {期末评估、word、单科、全校}
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.finalExam_word_aCourse_school(course, exam);
+                end;
+                1:begin                                             //全年级
+                  {期末评估、word、单科、全年级}
+                end;
+                2:begin                                             //班级
+                  {期末评估、word、单科、班级}
+                end;
+              end;
+            end;
+          end;
+        end;
+        1:begin                                                    //excel
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {期末评估、excel、全科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  exam := report_exam_ComboBox.Text;
+                  output1.finalExam_Excel_allCourse_school(exam);
+                end;
+                1:begin                                            //全年级
+                  {期末评估、excel、全科、全年级}
+                end;
+                2:begin                                            //班级
+                  {期末评估、excel、全科、班级}
+                end;
+              end;
+            end;
+            1:begin                                                //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {期末评估、excel、单科、全校}
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.finalExam_Excel_aCourse_school(course, exam);
+                end;
+                1:begin                                            //全年级
+                  {期末评估、excel、单科、全年级}
+                end;
+                2:begin                                            //班级
+                  {期末评估、excel、单科、班级}
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
     end;
-    3:begin   //单科成绩统计表(word)
-      exam := report_exam_ComboBox.Text;
-      course := report_course_ComboBox.Text;
-      classID := report_classID_ComboBox.Text;
-      output1.roster(classID,course,exam);
-    end;
-    4:begin   //学生成绩统计表(excel)
-      classID := report_classID_ComboBox.Text;
-      output1.rosterExcel(classID,'','');
-    end;
-    5:begin   //单科成绩表(excel)
-      exam := report_exam_ComboBox.Text;
-      course := report_course_ComboBox.Text;
-      classID := report_classID_ComboBox.Text;
-      output1.rosterExcel(classID,course,exam);
-    end;
-    6:begin   //成绩总表(excel)
-      exam := report_exam_ComboBox.Text;
-      classID := report_classID_ComboBox.Text;
-      output1.allScoresExcel(classID,exam);
+    3: begin   //考试评估
+      case report_Filetype_ComboBox.ItemIndex of
+        0:begin                                                     //word
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                 //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {考试评估、word、全科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  exam := report_exam_ComboBox.Text;
+                  output1.exam_word_allCourse_school(exam);
+                end;
+                1:begin                                             //全年级
+                  {考试评估、word、全科、全年级}
+                end;
+                2:begin                                             //班级
+                  {考试评估、word、全科、班级}
+                end;
+              end;
+            end;
+            1:begin                                                 //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                             //全校
+                  {考试评估、word、单科、全校}
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.exam_word_aCourse_school(course, exam);
+                end;
+                1:begin                                             //全年级
+                  {考试评估、word、单科、全年级}
+                end;
+                2:begin                                             //班级
+                  {考试评估、word、单科、班级}
+                end;
+              end;
+            end;
+          end;
+        end;
+        1:begin                                                    //excel
+          case report_courseType_ComboBox.ItemIndex of
+            0:begin                                                //全科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {考试评估、excel、全科、全校}
+                  if visual_CheckBox.Checked then
+                  begin
+                    showmessage('多文件输出不支持预览。');
+                    visual_CheckBox.Checked := false;
+                    output1.isVisual(false);
+                  end;
+                  exam := report_exam_ComboBox.Text;
+                  output1.exam_Excel_allCourse_school(exam);
+                end;
+                1:begin                                            //全年级
+                  {考试评估、excel、全科、全年级}
+                end;
+                2:begin                                            //班级
+                  {考试评估、excel、全科、班级}
+                end;
+              end;
+            end;
+            1:begin                                                //单科
+              case report_outPutLimits_ComboBox.ItemIndex of
+                0:begin                                            //全校
+                  {考试评估、excel、单科、全校}
+                  course := report_courseName_ComboBox.Text;
+                  exam := report_exam_ComboBox.Text;
+                  output1.exam_Excel_aCourse_school(course, exam);
+                end;
+                1:begin                                            //全年级
+                  {考试评估、excel、单科、全年级}
+                end;
+                2:begin                                            //班级
+                  {考试评估、excel、单科、班级}
+                end;
+              end;
+            end;
+          end;
+        end;
+      end;
     end;
   end;
-  promptPanel.SetBounds(form1.Width,form1.height,0,0);
+//导出完成，消除提示信息
+  promptPanel.SetBounds(Width,height,0,0);
   promptPanel.Visible := false;
 end;
 
 
 procedure TForm1.report_type_ComboBoxChange(Sender: TObject);
 begin
-  report_exam_ComboBox.Enabled := false;
-  report_grade_ComboBox.Enabled := false;
-  report_course_ComboBox.Enabled := false;
-  report_classID_ComboBox.Enabled := false;
-  report_exam_ComboBox.ItemIndex := -1;
-  report_grade_ComboBox.ItemIndex := -1;
-  report_course_ComboBox.ItemIndex := -1;
-  report_classID_ComboBox.ItemIndex := -1;
+  initOutputPanel();
+  report_FileType_ComboBox.Enabled := true;
+  report_courseType_ComboBox.Enabled := true;
 
   case report_type_ComboBox.ItemIndex of
-    0:begin                //期末评估(word)
-      report_course_ComboBox.Enabled := true;
+    0: begin             //登分表
+      report_outPutLimits_ComboBox.Enabled := true;
     end;
-    1:begin               //考试评估(word)
-      report_exam_ComboBox.Enabled := true;
-      report_course_ComboBox.Enabled := true;
+    1: begin             //成绩表
+      report_outPutLimits_ComboBox.Enabled := true;
+      report_exam_ComboBox.Enabled := true;          //report_exam_ComboBox中有所有考试
     end;
-    2:begin               //学生成绩统计表(word)
-      report_grade_ComboBox.Enabled := true;
-      report_classID_ComboBox.Enabled := true;
+    2: begin             //期末评估
+      report_courseName_ComboBox.Enabled := true;    //report_courseName_ComboBox中有所有年级课程
+      report_outPutLimits_ComboBox.ItemIndex := 0;
+      report_exam_ComboBox.Items.Clear;
+      report_exam_ComboBox.Items.Add('期末');
+      report_exam_ComboBox.ItemIndex := 0;
+      report_exam_ComboBox.Enabled := false;
     end;
-    3:begin               //单科成绩表(word)
-      report_exam_ComboBox.Enabled := true;
-      report_grade_ComboBox.Enabled := true;
-      report_course_ComboBox.Enabled := true;
-      report_classID_ComboBox.Enabled := true;
-    end;
-    4:begin               //学生成绩统计表(excel)
-      report_grade_ComboBox.Enabled := true;
-      report_classID_ComboBox.Enabled := true;
-    end;
-    5:begin   //单科成绩表(excel)
-      report_exam_ComboBox.Enabled := true;
-      report_grade_ComboBox.Enabled := true;
-      report_course_ComboBox.Enabled := true;
-      report_classID_ComboBox.Enabled := true;
-    end;
-    6:begin   //成绩总表(excel)
-      report_exam_ComboBox.Enabled := true;
-      report_grade_ComboBox.Enabled := true;
-      report_classID_ComboBox.Enabled := true;
+    3: begin             //考试评估
+      report_exam_ComboBox.Enabled := true;          //report_exam_ComboBox中有所有考试
+      report_courseName_ComboBox.Enabled := true;    //report_courseName_ComboBox中有所有年级课程
+      report_outPutLimits_ComboBox.ItemIndex := 0;
     end;
   end;
 end;
@@ -1391,17 +1906,23 @@ end;
 
 
 procedure TForm1.N2Click(Sender: TObject);
+var
+  form2 : TForm2;
 begin
-  Form2.Visible := true;
+  Application.CreateForm(TForm2, Form2); { 创建 Form1 主窗体 }
+  Form2.Show;                            { 显示 Form1，这时是主窗体了 }
+  GlobalData.enterScoreIdentity := 0;   //表示从管理员进入成绩录入人员界面
 end;
+
+
 
 procedure TForm1.inout_submit_btnClick(Sender: TObject);
 var
   path : string;
   input1 : Input;
 begin
-  promptPanel.SetBounds(round((form1.Width-promptLabel.Width)/2),
-      round((form1.Height-promptLabel.Height)/2),promptLabel.Width,promptLabel.Height);
+  promptPanel.SetBounds(round((Width-promptLabel.Width)/2),
+      round((Height-promptLabel.Height)/2),promptLabel.Width,promptLabel.Height);
   promptLabel.SetBounds(0,0,promptPanel.Width,promptPanel.Height);
   promptLabel.Caption := '数据导入中，请稍后...';
   promptPanel.Visible := true;
@@ -1429,16 +1950,34 @@ begin
     end;
   end;
 
-  promptPanel.SetBounds(form1.Width,form1.height,0,0);
+  promptPanel.SetBounds(Width,height,0,0);
   promptPanel.Visible := false;
 end;
 
 {***********************************数据库管理*********************************}
+procedure TForm1.term_ComboBoxChange(Sender: TObject);
+begin
+  if keepBack_CheckBox.Checked and (term_ComboBox.ItemIndex = 1) then            //下学期
+  begin
+    data_course_CheckBox.Enabled := true;
+  end else begin
+    data_course_CheckBox.Checked := false;
+    data_course_CheckBox.Enabled := false;
+  end;
+
+end;
+
 procedure TForm1.keepBack_CheckBoxClick(Sender: TObject);
 begin
   if keepBack_CheckBox.Checked then
   begin
-    data_course_CheckBox.Enabled := true;
+    if term_ComboBox.ItemIndex = 1 then
+    begin
+      data_course_CheckBox.Enabled := true;
+    end else begin
+      data_course_CheckBox.Checked := false;
+      data_course_CheckBox.Enabled := false;
+    end;
     data_par_CheckBox.Enabled := true;
     data_teacher_CheckBox.Enabled := true;
     data_user_CheckBox.Enabled := true;
@@ -1458,35 +1997,94 @@ var
   data : Database;
   flag : boolean;
   y : integer;
+  I: Integer;
+
+  term_ComboBox_index : integer;
+  term : string;
 begin
   data := Database.Create;
   flag := true;
   y:= check.year(database_beginYear_Edit.Text,flag);
 
+  term_ComboBox_index := term_ComboBox.ItemIndex;
+  case term_ComboBox_index of
+    -1:begin
+      showMessage('请选择数据库对应的学期！');
+      exit;
+    end;
+    0:begin
+      term := '上学期';
+    end;
+    1:begin
+      term := '下学期';
+    end;
+  end;
+
+
   if flag then
   begin
-    if data.createNewDatabase(y) then
-    begin
-      //显示提示信息
-      promptPanel.SetBounds(round((form1.Width-promptLabel.Width)/2),
-      round((form1.Height-promptLabel.Height)/2),promptLabel.Width,promptLabel.Height);
+    //显示提示信息
+      promptPanel.SetBounds(round((Width-promptLabel.Width)/2),
+      round((Height-promptLabel.Height)/2),promptLabel.Width,promptLabel.Height);
       promptLabel.SetBounds(0,0,promptPanel.Width,promptPanel.Height);
       promptLabel.Caption := '数据库初始化，请稍后...';
       promptPanel.Visible := true;
       promptPanel.BringToFront;
-      //数据导入
-      if data_course_CheckBox.Checked then  data.keepCourse(y);
-      if data_par_CheckBox.Checked then  data.keepPar(y);
-      if data_teacher_CheckBox.Checked then  data.keepTeacher(y);
-      if data_user_CheckBox.Checked then  data.keepUser(y);
-      if data_stu_CheckBox.Checked then  data.keepStu(y);
-      //消除提示信息
-      promptPanel.SetBounds(form1.Width,form1.height,0,0);
-      promptPanel.Visible := false;
-      showmessage('数据库创建完成');
+    //复制前一学期的数据库
+    if not data.createDatabaseByOld(y,term) then
+    begin
+      showmessage('数据库创建失败！');
+      exit;
     end;
-  end;
+    //保存原有数据库连接串
+    data.saveConnString();
+    //连接到新数据库
+    if not data.linkNewDatabase(y,term) then
+    begin
+      showmessage('新数据库连接失败！');
+      exit;
+    end;
+    //设置新数据库开学年份
+    data.setBeginYear(y);
 
+    //删除全部考试信息，以及对应成绩
+    data.delExam(data_stu_CheckBox.Checked);
+
+    //先处理课程和成绩信息
+    if not data_course_CheckBox.Checked then
+    begin
+      data.delCourse();     //课程信息会被删除，对应成绩表也会删除
+    end;
+
+    //跨学年需要更新课程表
+    if comparestr(term,'上学期') = 0 then
+    begin
+      data.updateCourseTable();
+    end;
+    //删除不需要保留的数据
+
+
+    if not data_par_CheckBox.Checked then
+      data.delPar();
+    if not data_teacher_CheckBox.Checked then
+      data.delTeacher();
+    if not data_user_CheckBox.Checked then
+      data.delUser();
+    if not data_stu_CheckBox.Checked then
+    begin
+      for I := 1 to 9 do
+      begin
+        data.delStu(i);
+      end;
+    end;
+    //恢复原有数据库连接
+    data.recoverOldLink();
+    //消除提示信息
+    promptPanel.SetBounds(Width,height,0,0);
+    promptPanel.Visible := false;
+    showmessage('数据库创建完成');
+  end;
+  promptPanel.Visible := false;
 end;
 {*********************************全局辅助方法*********************************}
 {
@@ -1498,6 +2096,7 @@ var
   classID : string;
   ComboBox:TComboBox;
   trans : CTransForm;
+  allGrade : boolean;
 begin
   if PageControl1.ActivePage = coursePage then        //课程管理
   begin
@@ -1514,27 +2113,23 @@ begin
     getInfoByGrade(ComboBox,grade);
   end;
 
-  if PageControl1.ActivePage = outputPage then         //文件导出
-  begin
-    grade := report_grade_ComboBox.ItemIndex + 1;
-    ComboBox := report_classID_ComboBox;
-    getInfoByGrade(ComboBox,grade);
-  end;
 end;
 
 procedure TForm1.getInfoByGrade(var ComboBox:TComboBox; grade:integer);
+var
+  ADOQuery1 : TADOQuery;
 begin
+  ADOQuery1 := TADOQuery.Create(nil);
 // 查询年级为grade的所有班级
-  classes.selectByGrade(ADOQuery, grade);
+  classes.selectByGrade(ADOQuery1, grade);
 
 //将查询得到的班级放入class_classID_ComboBox.Items中
   ComboBox.Items.Clear;
-  while not ADOQuery.eof do
+  while not ADOQuery1.eof do
   begin
-    ComboBox.Items.Add(ADOQuery.FieldByName('班号').AsString);
-    ADOQuery.Next;
+    ComboBox.Items.Add(ADOQuery1.FieldByName('班号').AsString);
+    ADOQuery1.Next;
   end;
-  ADOQuery.Active := false;
 end;
 
 {
@@ -1561,22 +2156,26 @@ begin
     if course_operate_RG.ItemIndex = 1 then      //修改
     begin
       try
+        course_grade_ComboBox.ItemIndex := ADOQuery.FieldByName('年级').AsInteger - 1;
         course_courseName_Edit.Text := ADOQuery.FieldByName('课程名称').AsString;
-        if Comparestr('文科',ADOQuery.FieldByName('课程类型').AsString)=0 then
-        begin
-          course_courseType_ComboBox.ItemIndex := 1;
-        end else if Comparestr('理科',ADOQuery.FieldByName('课程类型').AsString)=0 then
-        begin
-          course_courseType_ComboBox.ItemIndex := 0;
-        end;
       except
         course_courseName_Edit.Text := ADOQuery.FieldByName('课程名称').AsString;
         course_teacher_Edit.Text := ADOQuery.FieldByName('任课教师').AsString;
       end;
+      if Comparestr('文科',ADOQuery.FieldByName('课程类型').AsString)=0 then
+      begin
+        course_courseType_ComboBox.ItemIndex := 1;
+      end else if Comparestr('理科',ADOQuery.FieldByName('课程类型').AsString)=0 then
+      begin
+        course_courseType_ComboBox.ItemIndex := 0;
+      end;
+
+      getInfoByGrade(course_classID_ComboBox,course_grade_ComboBox.ItemIndex + 1);
     end;
 
     if course_operate_RG.ItemIndex = 2 then      //删除
     begin
+      course_grade_ComboBox.ItemIndex := ADOQuery.FieldByName('年级').AsInteger - 1;
       course_courseName_Edit.Text := ADOQuery.FieldByName('课程名称').AsString;
       if Comparestr('文科',ADOQuery.FieldByName('课程类型').AsString)=0 then
       begin
@@ -1602,24 +2201,24 @@ begin
   if PageControl1.ActivePage = examPage then           //考务管理
   begin
     examName_Edit.Text := ADOQuery.FieldByName('考试名称').AsString;
-    if Comparestr(ADOQuery.FieldByName('学期').AsString,'上') = 0 then
-    begin
-      term_ComboBox.ItemIndex := 0;
-    end else begin
-      term_ComboBox.ItemIndex := 1;
-    end;
     examTime_Edit.Text := ADOQuery.FieldByName('考试时间').AsString;
   end;
 
-  if PageControl1.ActivePage = parPage then
+  if PageControl1.ActivePage = parPage then           //参数配置
   begin
     par_grade_ComboBox.ItemIndex  := ADOQuery.FieldByName('年级').AsInteger - 1;
     par_averWen_base_Edit.Text    := ADOQuery.FieldByName('文科平均分下界').AsString;
     par_averWen_top_Edit.Text     := ADOQuery.FieldByName('文科平均分上界').AsString;
     par_averLi_base_Edit.Text     := ADOQuery.FieldByName('理科平均分下界').AsString;
     par_averLi_top_Edit.Text      := ADOQuery.FieldByName('理科平均分上界').AsString;
-    par_dev_base_Edit.Text        := ADOQuery.FieldByName('标准差评估差值').AsString;
-    par_greatRatio_base_Edit.Text := ADOQuery.FieldByName('优生率评估差值').AsString;
+    par_averWenNo_Edit.Text       := ADOQuery.FieldByName('文科均分否决').AsString;
+    par_averWenYes_Edit.Text      := ADOQuery.FieldByName('文科均分肯定').AsString;
+    par_averLiNo_Edit.Text        := ADOQuery.FieldByName('理科均分否决').AsString;
+    par_averLiYes_Edit.Text       := ADOQuery.FieldByName('理科均分肯定').AsString;
+    par_dev_Edit.Text             := ADOQuery.FieldByName('标准差评估差值').AsString;
+    par_greatRatio_Edit.Text      := ADOQuery.FieldByName('优生率评估差值').AsString;
+    par_greatWeight_Edit.Text     := ADOQuery.FieldByName('优生占比').AsString;
+    par_inferiorWeight_Edit.Text  := ADOQuery.FieldByName('学困占比').AsString;
   end;
 
 end;

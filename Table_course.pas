@@ -19,12 +19,13 @@ type
     courseType : string;  //课程类别(文科、理科)
     teacher : string;  //任课教师
 
+    function isHasCourse(grade1 : integer; course : string):boolean;
     procedure getCourse(var ADOQuery : TADOQuery);
-    function getAllCourse(var courseList : TStringList;var gradeList : TStringList):Integer;
+    function getAllCourse(var ADOQuery : TADOQuery):Integer;
     procedure getCourseByGrade(var ADOQuery : TADOQuery; grade : integer);
-    procedure addCourse(var ADOQuery : TADOQuery);
-    procedure changeCourse(var ADOQuery : TADOQuery);
-    procedure delCourse(var ADOQuery : TADOQuery);
+    procedure addCourse();
+    procedure changeCourse();
+    procedure delCourse();
 end;
 
 implementation
@@ -34,6 +35,22 @@ implementation
     classes := Tb_classes.Create;
   end;
 
+
+  function Tb_course.isHasCourse(grade1 : integer; course : string):boolean;
+  var
+    sql : string;
+    ADOQuery1 : TADOQuery;
+  begin
+    ADOQuery1 := TADOQuery.Create(nil);
+    sql := 'SELECT courseName from  tb_course_'+inttostr(grade1)+' where courseName = '+#39+course+#39;
+    ado.SelectInfo(ADOQuery1, sql);
+    if ADOQuery1.RecordCount = 0 then
+    begin
+      result := false;
+    end else begin
+      result := true;
+    end;
+  end;
   {
       获取某个班级所有课程的任课情况
       参数：  classID     班号
@@ -44,33 +61,64 @@ implementation
     sql : string;
   begin
     sql := 'SELECT courseName as 课程名称, ' +
+        'courseType as 课程类型, ' +
         'T_'+classID +' as 任课教师 ' +
         'from  tb_course_'+inttostr(grade);
     ado.SelectInfo(ADOQuery, sql);
   end;
 
-  function Tb_course.getAllCourse(var courseList : TStringList;var gradeList : TStringList):Integer;
+  function Tb_course.getAllCourse(var ADOQuery : TADOQuery):Integer;
   var
     I : Integer;
     count : integer;
-    ADOQuery : TADOQuery;
+    ADOQuery1 : TADOQuery;
+
+    sql : string;
+
+    grade : integer;
+    courseName : string;
+    courseType : string;
 
   begin
-    ADOQuery := TADOQuery.Create(nil);
+    ADOQuery1 := TADOQuery.Create(nil);
+    try
+      sql := 'Drop table Tb_courseTemp';
+      ado.ExecSqlStr(sql);
+    except
 
-    count := 0;
-    for I := 1 to 9 do
+    end;
+
+    sql := 'SELECT 1 as grade, courseName, courseType '+
+        ' into Tb_courseTemp '+
+        ' from tb_course_1';
+    ado.ExecSqlStr(sql);
+
+    for I := 2 to 9 do
     begin
-      getCourseByGrade(ADOQuery, i);
-      while not ADOQuery.Eof do
+      getCourseByGrade(ADOQuery1, i);
+      while not ADOQuery1.Eof do
       begin
-        courseList.Add(ADOQuery.FieldByName('课程名称').AsString);
-        gradeList.Add(inttostr(i));
-        count := count + 1;
-        ADOQuery.Next;
+        grade := ADOQuery1.FieldByName('年级').AsInteger;
+        courseName := ADOQuery1.FieldByName('课程名称').AsString;
+        courseType := ADOQuery1.FieldByName('课程类型').AsString;
+        sql := 'INSERT INTO Tb_courseTemp(grade, courseName, courseType) '+
+            ' Values('   + inttostr(grade)      +','+
+                     #39 + courseName      +#39 +','+
+                     #39 + courseType      +#39 +')';
+        ado.ExecSqlStr(sql);
+        ADOQuery1.Next;
       end;
     end;
-    result := count;
+
+    sql := 'SELECT grade as 年级, courseName as 课程名称,courseType as 课程类型 '+
+        ' from Tb_courseTemp';
+    ado.SelectInfo(ADOQuery, sql);
+
+    try
+      sql := 'Drop table Tb_courseTemp';
+      ado.ExecSqlStr(sql);
+    except
+    end;
   end;
 
   {
@@ -81,7 +129,8 @@ implementation
   var
     sql : string;
   begin
-    sql := 'SELECT courseName as 课程名称,courseType as 课程类型,* from tb_course_'+inttostr(grade);
+    sql := 'SELECT '+inttostr(grade)+' as 年级, courseName as 课程名称,courseType as 课程类型,* '+
+        ' from tb_course_'+inttostr(grade);
     ado.SelectInfo(ADOQuery, sql);
   end;
 
@@ -91,14 +140,16 @@ implementation
               CourseName   课程名
               courseType    课程类型
   }
-  procedure Tb_course.addCourse(var ADOQuery : TADOQuery);
+  procedure Tb_course.addCourse();
   var
     sql : string;
     classIdList : TStringList;
     i : integer;
     exam : Tb_exam;
     examList : TStringList;
+    ADOQuery : TADOQuery;
   begin
+    ADOQuery := TADOQuery.Create(nil);
     exam := Tb_exam.Create;
     examList := TStringList.Create;
     classIdList := TStringList.Create;
@@ -107,33 +158,27 @@ implementation
     ado.SelectInfo(ADOQuery, sql);
     if ADOQuery.RecordCount <> 0 then
     begin
-      showmessage('数据库中已存课程：'+CourseName);
+      showmessage('数据库中已存在课程：'+inttostr(grade)+'年级:'+CourseName);
       exit;
     end;
     //向相应年级课程表中添加一条记录
     sql := 'INSERT INTO tb_course_'+inttostr(grade)+'(courseName, courseType) '+
         'Values(' + #39 + CourseName + #39 + ',' +
                     #39 + courseType + #39 + ')';
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
 
     //为该年级的新加入课程创建一张成绩表
     sql := 'Create TABLE tb_scores_' + inttostr(grade)+'_'+CourseName +'('+
         'stuID VarChar(10) primary key,'+
         'classID VarChar(5) not null,'+
         'stuName VarChar(10) not null,'+
-        '期末_上 float default -1 ,'+
-        '期末_下 float default -1 )';
-    ado.ExecSqlStr(ADOQuery, sql);
-    exam.selectExamName(grade,'上',ADOQuery);
+        '期末 float default -1 )';
+    ado.ExecSqlStr(sql);
+
+    exam.selectExamName(grade,ADOQuery);
     while not ADOQuery.Eof do
     begin
-      examList.Add(ADOQuery.FieldByName('考试名称').AsString + '_上');
-      ADOQuery.Next;
-    end;
-    exam.selectExamName(grade,'下',ADOQuery);
-    while not ADOQuery.Eof do
-    begin
-      examList.Add(ADOQuery.FieldByName('考试名称').AsString + '_下');
+      examList.Add(ADOQuery.FieldByName('考试名称').AsString );
       ADOQuery.Next;
     end;
 
@@ -142,7 +187,7 @@ implementation
       try
         sql := 'alter table tb_scores_' + inttostr(grade)+'_'+CourseName+
                 ' add '+ examList [i] +' float default -1';
-        ado.ExecSqlStr(ADOQuery, sql);
+        ado.ExecSqlStr(sql);
       except
 
       end;
@@ -164,7 +209,7 @@ implementation
       sql := 'Insert into tb_scores_' + inttostr(grade)+'_'+CourseName +
         '(stuID, stuName, classID) '+
         ' select stuID,stuName,'+#39+ classIdList[i]+#39 +'from tb_class_'+classIdList[i];
-      ado.ExecSqlStr(ADOQuery, sql);
+      ado.ExecSqlStr(sql);
     end;
   end;
 
@@ -176,7 +221,7 @@ implementation
               tracher     任课老师姓名
               courseName  课程名称
   }
-  procedure Tb_course.changeCourse(var ADOQuery : TADOQuery);
+  procedure Tb_course.changeCourse();
   var
     sql : string;
   begin
@@ -184,7 +229,7 @@ implementation
         ' set T_'+classID+' ='+ #39 + teacher     + #39 +  ','
               +' courseType ='+ #39 + courseType  + #39 +
         ' where courseName=' + #39 + CourseName + #39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 
   {
@@ -192,16 +237,16 @@ implementation
       参数：  grade       年级
               courseName  课程名称
   }
-  procedure Tb_course.delCourse(var ADOQuery : TADOQuery);
+  procedure Tb_course.delCourse();
   var
     sql : string;
   begin
     sql := 'DELETE FROM tb_course_' + inttostr(grade) +
         ' WHERE courseName ='+#39 + CourseName +#39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
     //删除与课程相关的表
     sql := 'Drop table tb_scores_' + inttostr(grade)+'_'+CourseName;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 
 end.

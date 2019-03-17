@@ -3,7 +3,7 @@ unit Table_assessment;
 interface
 uses
      Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, DB, ADODB, ADOOperate, Table_classes, Math, GlobalData,DataTransform;
+  Dialogs, DB, ADODB, ADOOperate, Table_classes, Math, GlobalData,DataTransform,Table_parameters;
 
 type
   assessment = record   //结果分析表实体
@@ -17,6 +17,8 @@ type
     inferiorRatio :double;              //学困率
     evaluate : string;                  //异动(对教师的评价)
     teacher : string;                   //任课教师
+    greatLine : double;                 //优生分数线
+    inferiorLine : double;              //学困生分数线
   end;
 
   Tb_assessment = class
@@ -24,21 +26,23 @@ type
   private
     ado : TAdoOperate;
     ADOQuery: TADOQuery;
+    examName : string;                //考试名称
+    courseName : string;              //课程名称
+
     procedure createReportTable(exam, course : string);
     procedure fillInTheReportTable(exam, course : string);
     procedure getAllclass(grade : integer; var classList:TStringList);
     procedure getGradedata(grade : integer; var grade_ass : assessment);
+    procedure BubbleSort(var x:array of double);
     procedure getClassdata(grade : integer; classID : string;var class_ass, grade_ass : assessment);
     procedure computeDev(var score : array of double; var average, dev : double);
     function evaluate(grade : integer; class_ass, grade_ass : assessment):string;  //教师评估
-    function evaluateAver(base, top: double; class_aver, grade_aver: Double):integer;  //平均分评估
+    function evaluateAver(base, top, averNo, averYes: double; class_aver, grade_aver: Double):integer;  //平均分评估
     function evaluateDev(dev, class_dev, grade_dev: Double):integer;  //标准差评估
     function evaluateGrateRatio(greatRatio, class_grateRatio, grade_grateRatio: Double):integer;  //优生率评估
     procedure initAss(var ass : assessment);  //初始化assessment对象
     procedure insertDataToTable(grade:integer;var ass : assessment);  //把记录插入到表中
-  private
-    examName : string;                //考试名称
-    courseName : string;              //课程名称
+
   public
     procedure createReport(exam, course : string);
 end;
@@ -60,7 +64,7 @@ implementation
     try
       //删除原有报告表
       sql := 'Drop table tb_report_' + exam + '_' + course;
-      ado.ExecSqlStr(ADOQuery, sql);
+      ado.ExecSqlStr(sql);
     except
     end;
    //创建新的报告表
@@ -84,8 +88,10 @@ implementation
         ' inferiorStuNum      int         default 0,'+
         ' inferiorRatio       float       default 0,'+
         ' evaluate            VarChar(2)  null,'+
-        ' teacher             VarChar(10) null )';
-    ado.ExecSqlStr(ADOQuery, sql);
+        ' teacher             VarChar(10) null,'+
+        ' greatLine           float       default 0,'+
+        ' inferiorLine        float       default 0)';
+    ado.ExecSqlStr(sql);
   end;
 
   procedure Tb_assessment.fillInTheReportTable(exam, course : string);
@@ -154,21 +160,32 @@ implementation
     scoreArr : array of double;
 
     testNum : integer;           //测试人数
+    quekaoNum : integer;         //缺考人数
     average : double;            //平均值
     dev : double;                //标准差
     greatStuNum : integer;       //优生人数
     inferiorStuNum : integer;    //学困生人数
 
-    grateLine : real;            //优秀最低分，含临界
+    greatLine : double;          //优秀最低分，含临界
     inferiorLine : double;       //学困的最高分，不含临界
+    greatWeight : double;        //优生占有率
+    inferiorWeight : double;      //学困占有率
+    greatIndex : integer;        //
+    inferiorIndex : integer;      //
 
     i : integer;
   begin
     testNum := 0;
+    quekaoNum := 0;
     average := 0;
     dev := 0;
     greatStuNum := 0;
     inferiorStuNum := 0;
+  //从参数表中获取优生比例和学困比例
+    sql := 'select greatWeight, inferiorWeight from tb_parameters  where grade ='+inttostr(grade);
+    ado.SelectInfo(ADOQuery, sql);
+    greatWeight := ADOQuery.FieldByName('greatWeight').Asfloat;
+    inferiorWeight := ADOQuery.FieldByName('inferiorWeight').Asfloat;
 
   //从数据库中获取这个年级该课程所有成绩
     sql := 'select '+examName+' from tb_scores_'+inttostr(grade)+'_'+courseName;
@@ -181,16 +198,41 @@ implementation
       ADOQuery.Next;
     end;
 
-    computeDev(scoreArr, average, dev);       //计算平均值和标准差
-    grateLine := average + dev;               //成绩为正态分布，高于平均分一个标准差的评为优生
-    inferiorLine := average - (dev * 2);      //低于平均值两个标准差的评为差生
+    BubbleSort(scoreArr);
 
+    //计算优生和学困分数线
     for I := 0 to Length(scoreArr)-1 do
     begin
       if (scoreArr[i] <> -1) then
       begin
         testNum := testNum+1;
-        if (scoreArr[i]>= grateLine) then
+      end else begin
+        quekaoNum := quekaoNum + 1;
+      end;
+    end;
+
+    if testNum <> 0 then
+    begin
+      greatIndex := (Length(scoreArr)-Round(testNum*(greatWeight/100)));        //优生占有率
+      inferiorIndex := (Round(testNum*(inferiorWeight/100))+quekaoNum);      //学困占有率
+      if inferiorIndex = -1 then inferiorIndex := 0;    //无人考试时inferiorIndex=-1；
+
+
+      greatLine := scoreArr[greatIndex];      //优生线
+      inferiorLine := scoreArr[inferiorIndex];        //学困线
+    end else begin
+      greatLine := 0;      //优生线
+      inferiorLine := 0;        //学困线
+    end;
+
+    computeDev(scoreArr, average, dev);       //计算平均值和标准差
+
+    //统计优生和学困人数
+    for I := 0 to Length(scoreArr)-1 do
+    begin
+      if (scoreArr[i] <> -1) then
+      begin
+        if (scoreArr[i]>= greatLine) then
           greatStuNum := greatStuNum+1;
         if (scoreArr[i]<inferiorLine) then
           inferiorStuNum := inferiorStuNum+1;
@@ -213,6 +255,27 @@ implementation
     grade_ass.inferiorStuNum := inferiorStuNum;
     grade_ass.evaluate := '';
     grade_ass.teacher := '';
+    grade_ass.greatLine := greatLine;
+    grade_ass.inferiorLine := inferiorLine;
+  end;
+
+  procedure Tb_assessment.BubbleSort(var x:array of double);       //冒泡排序(大的往后)
+  var
+    i,j : integer;
+    doubleTmp : double;
+  begin
+    for i:=0 to high(x) do
+    begin
+      for j:=0 to high(x)-1 do
+      begin
+        if x[j]>x[j+1] then
+        begin
+          doubleTmp:=x[j];
+          x[j]:=x[j+1];
+          x[j+1]:=doubleTmp;
+        end;
+      end;
+    end;
   end;
 
   procedure Tb_assessment.getClassdata(grade : integer; classID : string;var class_ass, grade_ass : assessment);
@@ -238,8 +301,8 @@ implementation
     greatStuNum := 0;
     inferiorStuNum := 0;
     teacher := '';
-    grateLine := grade_ass.average + grade_ass.standardDev;         //高于平均值一个标准差评为优生
-    inferiorLine := grade_ass.average - grade_ass.standardDev * 2;  //低于平均值两个标准差评为学困生
+    grateLine := grade_ass.greatLine;
+    inferiorLine := grade_ass.inferiorLine;
 
   //获取这个班该课程的任课教师
     sql := 'SELECT T_'+classID +' as teacher ' +
@@ -334,8 +397,11 @@ implementation
     averTop : double;
     dev : double;
     greatRatio : double;
+//    averVeto : double;
+    averNo : double;
+    averYes : double;
 
-    averFlag : integer;             //0表示A，1表示B, 2表示C
+    averFlag : integer;             //0表示A，1表示B, 2表示C, 3表示一票否决
     dveFlag : integer;              //0表示A，1表示B, 2表示C
     grateFlag : integer;            //0表示A，1表示B, 2表示C
 
@@ -345,48 +411,69 @@ implementation
         ' where courseName='+#39+courseName+#39;
     ado.SelectInfo(ADOQuery, sql);
     courseType := ADOQuery.FieldByName('courseType').AsString;
-    sql := 'select averWenBase, averWenTop, averLiBase, averLiTop, dev, greatRatio'+
+    sql := 'select averWenBase, averWenTop, averLiBase, averLiTop, averWenNo, averWenYes, averLiNo, averLiYes, dev, greatRatio'+
           ' from tb_parameters  where grade ='+inttostr(grade);
     ado.SelectInfo(ADOQuery, sql);
+//    averVeto := ADOQuery.FieldByName('averVeto').Asfloat;
 
     if Comparestr('文科',courseType)=0 then
     begin
       averBase := ADOQuery.FieldByName('averWenBase').Asfloat;
       averTop := ADOQuery.FieldByName('averWenTop').Asfloat;
+      averNo := ADOQuery.FieldByName('averWenNo').Asfloat;
+      averYes := ADOQuery.FieldByName('averWenYes').Asfloat;
     end else if Comparestr('理科',courseType)=0 then
     begin
       averBase := ADOQuery.FieldByName('averLiBase').Asfloat;
       averTop := ADOQuery.FieldByName('averLiTop').Asfloat;
+      averNo := ADOQuery.FieldByName('averLiNo').Asfloat;
+      averYes := ADOQuery.FieldByName('averLiYes').Asfloat;
     end;
     dev := ADOQuery.FieldByName('dev').Asfloat;
     greatRatio := ADOQuery.FieldByName('greatRatio').Asfloat;
 
 
-    averFlag := evaluateAver(averBase,averTop, class_ass.average, grade_ass.average);
+    averFlag := evaluateAver(averBase,averTop, averNo, averYes, class_ass.average, grade_ass.average);
     dveFlag := evaluateDev(dev, class_ass.standardDev,grade_ass.standardDev);
     grateFlag := evaluateGrateRatio(greatRatio, class_ass.greatRatio, grade_ass.greatRatio);
 
-    if (averFlag = 0) and (dveFlag = 0) and (grateFlag = 0) then
-    begin
-      result := 'A';
-    end else if (averFlag = 2) and (dveFlag = 2) and (grateFlag = 2) then
+    if averFlag = 3 then          //一票否决
     begin
       result := 'C';
+    end else if averFlag = -1 then
+    begin
+      result := 'A';
     end else begin
-      result := 'B';
+      if (averFlag = 0) and (dveFlag = 0) and (grateFlag = 0) then
+      begin
+        result := 'A';
+      end else if (averFlag = 2) and (dveFlag = 2) and (grateFlag = 2) then
+      begin
+        result := 'C';
+      end else begin
+        result := 'B';
+      end;
     end;
   end;
 
-  function Tb_assessment.evaluateAver(base, top: double; class_aver, grade_aver: Double):integer;
+  function Tb_assessment.evaluateAver(base, top, averNo, averYes: double; class_aver, grade_aver: Double):integer;
   begin
-    if class_aver >= (grade_aver + top) then
+    if class_aver < grade_aver + averNo then         //一票否决,averNo是负值
     begin
-      result := 0;
-    end else if class_aver >= (grade_aver + base) then   //base是负数
+      result := 3;
+    end else if class_aver >=  grade_aver + averYes then     //一票肯定
     begin
-      result := 1;
+      result := -1;
     end else begin
-      result := 2;
+      if class_aver >= (grade_aver + top) then
+      begin
+        result := 0;
+      end else if class_aver >= (grade_aver + base) then   //base是负数
+      begin
+        result := 1;
+      end else begin
+        result := 2;
+      end;
     end;
   end;
 
@@ -428,6 +515,8 @@ implementation
     ass.inferiorRatio := 0;
     ass.evaluate := '';
     ass.teacher := '';
+    ass.greatLine := 0;
+    ass.inferiorLine := 0;
   end;
 
   procedure Tb_assessment.insertDataToTable(grade : integer; var ass : assessment);
@@ -449,8 +538,10 @@ implementation
           inttostr(ass.inferiorStuNum)      + ',' +
           Format('%.2f',[ass.inferiorRatio])+ ',' +
           #39 + ass.evaluate          + #39 + ',' +
-          #39 + ass.teacher           + #39 + ')';
-    ado.ExecSqlStr(ADOQuery, sql);
+          #39 + ass.teacher           + #39 + ',' +
+          Format('%.1f',[ass.greatLine])    + ',' +
+          Format('%.1f',[ass.inferiorLine]) + ')';
+    ado.ExecSqlStr(sql);
   end;
 
 end.

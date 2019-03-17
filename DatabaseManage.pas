@@ -4,42 +4,170 @@ interface
 uses
      Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DB, ADODB, ADOOperate, Table_classes, Table_course, Table_class,
-  Table_parameters, Table_users,Table_exam,DataTransform;
+  Table_parameters, Table_users,Table_exam, DataTransform;
 
 type
     Database = class
     Constructor Create;
   private
-    ado1 : TAdoOperate;        //数据库操作对象1
-    ADOQuery1 : TADOQuery;
-    ado2 : TAdoOperate;        //数据库操作对象2
-    ADOQuery2 : TADOQuery;
+    ado : TAdoOperate;        //数据库操作对象1
+    ADOQuery : TADOQuery;
     connString : string;  //临时存放原有数据库连接串
-    procedure saveConnString();
-    procedure setConnString();
 
+    function copyDatabase(year:integer; term:string; databaseModel : string):boolean;
   public
-    function createNewDatabase(year:integer):boolean;
-    procedure keepCourse(year:integer);
-    procedure keepPar(year:integer);
-    procedure keepTeacher(year:integer);
-    procedure keepUser(year:integer);
-    procedure keepStu(year:integer);
-    procedure initDao(year:integer);
+    function createNewDatabase(year:integer;term:string):boolean;
+    function createDatabaseByOld(year:integer; term:string):boolean;
+
+
+    procedure saveConnString();
+    function linkNewDatabase(year:integer; term:string):boolean;
+    procedure setBeginYear(year : integer);
+    procedure recoverOldLink();
+
+    procedure delCourse();
+    procedure delPar();
+    procedure delTeacher();
+    procedure delUser();
+    procedure delStu(grade : integer);
+    procedure updateCourseTable();
+    procedure delExam(keepStu:boolean);
   end;
 
 implementation
   Constructor Database.create;
   begin
-    ado1 := TAdoOperate.Create;
-    ADOQuery1 := TADOQuery.Create(nil);
-    ado2 := TAdoOperate.Create;        //数据库操作对象
-    ADOQuery2 := TADOQuery.Create(nil);
+    ado := TAdoOperate.Create;
+    ADOQuery := TADOQuery.Create(nil);
   end;
 
-  function Database.createNewDatabase(year:integer):boolean;
+  function Database.createNewDatabase(year:integer; term:string):boolean;
   var
     databaseModel : string;
+    softPath : string;
+    path : string;
+
+    sql : string;
+  begin
+    softPath := ExtractFileDir(ParamStr(0));      //获取软件本身所在路径，用于文件操作
+    databaseModel := softPath + '\model\database.accdb';
+    result := copyDatabase(year,term, databaseModel);
+
+    path := 'database\' + inttostr(year)+'-'+inttostr(year+1)+'-'+term+'.accdb';
+    ado.initConnStr(path);
+    if ado.testConn then
+    begin
+      sql := 'update tb_parameters set '+
+        ' yearBegin = ' + inttostr(year) +
+        ' where grade = 0';
+      ado.ExecSqlStr(sql);
+      try
+        sql := 'INSERT INTO tb_users(users,psw,userIdentity,power) '+
+          'Values('+#39+'admin'    +#39+',' +
+                    #39+'123'      +#39+',' +
+                        '0'            +',' +
+                    #39+'111111111'+#39+')';
+        ado.ExecSqlStr(sql);
+      except
+
+      end;
+    end;
+    ado.closeConn;
+  end;
+
+  function Database.createDatabaseByOld(year:integer; term:string):boolean;
+  var
+    databaseModel : string;
+    softPath : string;
+    path : string;
+
+    sql : string;
+  begin
+    //复制旧的数据库
+    softPath := ExtractFileDir(ParamStr(0));      //获取软件本身所在路径，用于文件操作
+    if comparestr(term,'上学期') = 0 then
+    begin
+      databaseModel := softPath + '\database\'+ inttostr(year-1)+'-'+inttostr(year)+'-下学期';
+    end else if comparestr(term,'下学期') = 0 then
+    begin
+      databaseModel := softPath + '\database\'+ inttostr(year)+'-'+inttostr(year+1)+'-上学期';
+    end;
+    if FileExists(databaseModel+'.accdb') then
+    begin
+      databaseModel := databaseModel + '.accdb';
+    end else if FileExists(databaseModel+'.mdb') then begin
+      databaseModel := databaseModel + '.mdb';
+    end else begin
+      showmessage('所需参照的旧数据库'+databaseModel+'不存在,将创建一个空白的新数据库。');
+      databaseModel := softPath + '\model\database.accdb';
+//      result := false;
+    end;
+    result := copyDatabase(year,term, databaseModel);
+    //删除旧的分析表
+//    sql := 'Drop table tb_report& "%"';
+//    ado.ExecSqlStr(sql);
+  end;
+
+  procedure Database.recoverOldLink();
+  var
+    par : Tb_parameters;
+  begin
+    ado.setConnStr(connString);
+    par := Tb_parameters.Create;
+    par.getPar();
+  end;
+
+  function Database.linkNewDatabase(year:integer; term:string):boolean;
+  var
+    path : string;
+  begin
+    path := 'database\' + inttostr(year)+'-'+inttostr(year+1)+'-'+term;
+    if FileExists(path+'.accdb') then
+    begin
+      path := path + '.accdb';
+    end else if FileExists(path+'.mdb') then begin
+      path := path + '.mdb';
+    end;
+
+    ado.initConnStr(path);
+    if ado.testConn then
+    begin
+      result := true;
+    end else begin
+      result := false;
+    end;
+
+    //跨学年需要清除毕业班
+    if comparestr(term,'上学期') = 0 then
+    begin
+      delStu(6);
+      delStu(9);
+    end;
+
+  end;
+
+  procedure Database.setBeginYear(year : integer);
+  var
+    sql : string;
+    par : Tb_parameters;
+  begin
+    //设置考学年份
+    sql := 'update tb_parameters set '+
+        ' averWenBase = 0,' +
+        ' averWenTop  = 0,' +
+        ' averLiBase  = 0,' +
+        ' averLiTop   = 0,' +
+        ' dev         = 0,' +
+        ' greatRatio  = 0,' +
+        ' yearBegin   = ' + inttostr(year) +
+        ' where grade = 0';
+    ado.ExecSqlStr(sql);
+    par := Tb_parameters.Create;
+    par.getPar();
+  end;
+
+  function Database.copyDatabase(year:integer; term:string; databaseModel : string):boolean;
+  var
     databaseName : string;
     softPath : string;
     path : string;
@@ -48,10 +176,9 @@ implementation
     sql : string;
   begin
     flag := true;
-    result := false;
     //判断是否存在同名数据库
     softPath := ExtractFileDir(ParamStr(0));      //获取软件本身所在路径，用于文件操作
-    path := softPath + '\database\' + inttostr(year)+'-'+inttostr(year+1);
+    path := softPath + '\database\' + inttostr(year)+'-'+inttostr(year+1)+'-'+term;
     if (FileExists(path+'.accdb')) or (FileExists(path+'.mdb')) then
     begin
       mes := inttostr(year)+'-'+inttostr(year+1)+'学年数据库已存在，是否删除原有数据库创建新数据库？';
@@ -60,255 +187,155 @@ implementation
         flag := true;   //是（覆盖）
       end else begin
         flag := false;
+        result := false;
       end;
     end;
 
     if flag then
     begin
-      databaseModel := softPath + '\model\database.accdb';
-      databaseName := softPath +'\database\'+inttostr(year)+'-'+inttostr(year+1)+'.accdb';
-      CopyFile(PChar(databaseModel), PChar(databaseName), false);      //false表示替换同名旧文件
-      result := true;
-
-      path := 'database\' + inttostr(year)+'-'+inttostr(year+1)+'.accdb';
-      ado1.initConnStr(path);
-      if ado1.testConn then
-      begin
-        sql := 'INSERT INTO tb_parameters(grade,yearBegin) Values(0,' +inttostr(year)+')';
-        ado1.ExecSqlStr(ADOQuery1, sql);
-        sql := 'INSERT INTO tb_users(users,psw,userIdentity,power) '+
-            'Values('+#39+'admin'    +#39+',' +
-                      #39+'123'      +#39+',' +
-                          '0'            +',' +
-                      #39+'111111111'+#39+')';
-        ado1.ExecSqlStr(ADOQuery1, sql);
+      databaseName := softPath +'\database\'+inttostr(year)+'-'+inttostr(year+1)+'-'+term+'.accdb';
+      try
+        CopyFile(PChar(databaseModel), PChar(databaseName), false);      //false表示替换同名旧文件
+        result := true;
+      except
+        result := false;
       end;
     end;
   end;
 
-  procedure Database.keepCourse(year:integer);
+  procedure Database.delCourse();
   var
     sql : string;
     course : Tb_course;
     I: Integer;
   begin
-    saveConnString;
-    initDao(year);
     course := Tb_course.Create;
 
     for I := 1 to 9 do
     begin
+
       sql := 'SELECT courseName,courseType from tb_course_'+inttostr(i);
-      ado2.SelectInfo(ADOQuery2, sql);
-      while not ADOQuery2.eof do
+      ado.SelectInfo(ADOQuery, sql);
+      while not ADOQuery.eof do
       begin
         course.grade := i;
-        course.courseName := ADOQuery2.FieldByName('courseName').AsString;
-        course.courseType := ADOQuery2.FieldByName('courseType').AsString;
-        course.addCourse(ADOQuery1);
-        ADOQuery2.Next;
+        course.courseName := ADOQuery.FieldByName('courseName').AsString;
+        course.courseType := ADOQuery.FieldByName('courseType').AsString;
+        course.delCourse;
+        ADOQuery.Next;
       end;
     end;
-    setConnString;
   end;
 
-  procedure Database.keepPar(year:integer);
+  procedure Database.delPar();
   var
     sql : string;
-    averWenBase : real;         //文科学科评定为B级别，低于年级平均分的最大分数
-    averWenTop :real;           //文科学科评定为B级别，高于年级平均分的最大分数
-    averLiBase : real;          //理科学科评定为B级别，低于年级平均分的最大分数
-    averLiTop : real;           //理科学科评定为B级别，高于年级平均分的最大分数
-    dev : real;                 //标准差不大于该参数评为A、小于评委C
-    greatRatio : real;          //优生率高于该百分比评为A、小于该百分比评委C
-    I: Integer;
   begin
-    saveConnString;
-    initDao(year);
-
-    sql := 'SELECT averWenBase,averWenTop,averLiBase,averLiTop,dev,greatRatio from tb_parameters';
-    ado2.SelectInfo(ADOQuery2, sql);
-
-    averWenBase := ADOQuery2.FieldByName('averWenBase').AsFloat;
-    averWenTop := ADOQuery2.FieldByName('averWenTop').AsFloat;
-    averLiBase := ADOQuery2.FieldByName('averLiBase').AsFloat;
-    averLiTop := ADOQuery2.FieldByName('averLiTop').AsFloat;
-    dev := ADOQuery2.FieldByName('dev').AsFloat;
-    greatRatio := ADOQuery2.FieldByName('greatRatio').AsFloat;
-
     sql := 'update tb_parameters set '+
-        ' averWenBase = ' + floattostr(averWenBase)    + ',' +
-        ' averWenTop  = ' + floattostr(averWenTop)     + ',' +
-        ' averLiBase  = ' + floattostr(averLiBase)     + ',' +
-        ' averLiTop   = ' + floattostr(averLiTop)      + ',' +
-        ' dev         = ' + floattostr(dev)            + ',' +
-        ' greatRatio  = ' + floattostr(greatRatio)     +
-        ' where ID = '+#39+'1'+#39;
-    ado1.ExecSqlStr(ADOQuery1, sql);
-    setConnString;
+        ' averWenBase = -2,' +
+        ' averWenTop  = 2,' +
+        ' averLiBase  = -2,' +
+        ' averLiTop   = 2,' +
+        ' averVeto    = 6,' +
+        ' dev         = 2,' +
+        ' greatRatio  = 5,' +
+        ' greatWeight = 16,' +
+        ' inferiorWeight  = 2.2';
+    ado.ExecSqlStr(sql);
   end;
 
-  procedure Database.keepTeacher(year:integer);
+  procedure Database.delTeacher();
   var
     sql : string;
+  begin
+    sql := 'update tb_classes set teacher = '+#39+#39;
+    ado.ExecSqlStr(sql);
+  end;
+
+  procedure Database.delUser();
+  var
+    sql : string;
+  begin
+    sql := 'DELETE * FROM tb_users';
+    ado.ExecSqlStr(sql);
+    sql := 'INSERT INTO tb_users(users, psw, userIdentity, power) '+
+        ' Values(' + #39 + 'admin'    +#39 +','+
+                     #39 + '123'      +#39 +','+
+                     '0, '+                     //0表示身份为管理员
+                     #39 + '111111111'+#39 +')';
+    ado.ExecSqlStr(sql);
+  end;
+
+  procedure Database.delStu(grade : integer);
+  var
     classes : Tb_classes;
+  begin
+    classes := Tb_classes.Create;
+    classes.selectByGrade(ADOQuery, grade);
+    while not ADOQuery.eof do
+    begin
+      classes.grade := grade;
+      classes.classID := ADOQuery.FieldByName('班号').AsString;
+      classes.delClass();
+      ADOQuery.next;
+    end;
+  end;
+
+  procedure Database.updateCourseTable();
+  var
+    sql : string;
     I: Integer;
   begin
-    saveConnString;
-    initDao(year);
-    classes := Tb_classes.Create;
-
-    sql := 'SELECT classID,stuNum,teacher from tb_classes';
-    ado2.SelectInfo(ADOQuery2, sql);
-    while not ADOQuery2.eof do
+    //更新coures表
+    i := 9;
+    while (i>0) do
     begin
-      try
-        classes.classID := ADOQuery2.FieldByName('classID').AsString;
-        classes.stuNum := ADOQuery2.FieldByName('stuNum').AsInteger;
-        classes.teacher := ADOQuery2.FieldByName('teacher').AsString;
-        classes.addClass(ADOQuery1);
-      except
-        classes.changeClass(ADOQuery1);
-      end;
-      ADOQuery2.Next;
+      sql := 'SELECT * into tb_course_'+inttostr(i+1)+' FROM tb_course_'+inttostr(i);
+      ado.ExecSqlStr(sql);
+      sql := 'drop   table tb_course_'+inttostr(i);
+      ado.ExecSqlStr(sql);
+
+      i := i-1;
     end;
-    setConnString;
+    sql := 'drop   table tb_course_10';
+      ado.ExecSqlStr(sql);
+    sql := 'drop   table tb_course_7';
+      ado.ExecSqlStr(sql);
+    sql := 'Create TABLE tb_course_1('+
+        'courseName VarChar(30) primary key,'+
+        'courseType VarChar(10) not null)';
+    ado.ExecSqlStr(sql);
+    sql := 'Create TABLE tb_course_7('+
+        'courseName VarChar(30) primary key,'+
+        'courseType VarChar(10) not null)';
+    ado.ExecSqlStr(sql);
   end;
 
-  procedure Database.keepUser(year:integer);
+
+  procedure Database.delExam(keepStu:boolean);
   var
     sql : string;
-    users : string;
-    psw : string;
-    userIdentity : integer;
-    power :string;
-    I: Integer;
+    exam : Tb_exam;
   begin
-    saveConnString;
-    initDao(year);
-
-    sql := 'SELECT users,psw,userIdentity,power from tb_users';
-    ado2.SelectInfo(ADOQuery2, sql);
-    //清除表中原有数据
-    sql := 'DELETE FROM tb_users WHERE users ='+#39+'admin'+#39;
-    ado1.ExecSqlStr(ADOQuery1, sql);
-    while not ADOQuery2.eof do
+    exam := Tb_exam.Create;
+    sql := 'SELECT examName,examGrade from tb_exam';
+    ado.SelectInfo(ADOQuery, sql);
+    while not ADOQuery.eof do
     begin
-      users := ADOQuery2.FieldByName('users').AsString;
-      psw := ADOQuery2.FieldByName('psw').AsString;
-      userIdentity := ADOQuery2.FieldByName('userIdentity').AsInteger;
-      power := ADOQuery2.FieldByName('power').AsString;
-      sql := 'INSERT INTO tb_users(users,psw,userIdentity,power) Values(' +
-          #39 + users             + #39 + ',' +
-          #39 + psw               + #39 + ',' +
-                inttostr(userIdentity)  + ',' +
-          #39 + power             + #39 +')';
-      ado1.ExecSqlStr(ADOQuery1, sql);
-      ADOQuery2.Next;
-    end;
-    setConnString;
-  end;
-
-  procedure Database.keepStu(year:integer);
-  var
-    sql : string;
-    stu : Tb_class;
-    transform : CTransform;
-    I : Integer;
-    j : integer;
-    classIDList : TstringList;
-    classes : Tb_classes;
-    y : integer;
-  begin
-    saveConnString;
-    initDao(year);
-
-    stu := Tb_class.Create;
-    transform := CTransform.Create;
-    classIDList := TstringList.Create;
-    classes := Tb_classes.Create;
-
-    for I := 1 to 5 do
-    begin
-      y := transform.GradeToClassID(i);
-      sql := 'SELECT classID from tb_classes where classID like '+ inttostr(y) +'& "%"';
-      ado2.SelectInfo(ADOQuery2, sql);
-      classIDList.clear;
-      while not ADOQuery2.eof do
-      begin
-        classIDList.Add(ADOQuery2.FieldByName('classID').AsString);
-        ADOQuery2.Next;
-      end;
-
-      for j := 0 to classIDList.Count -1 do
-      begin
-        try
-          classes.classID := classIDList[j];
-          classes.stuNum := 0;
-          classes.teacher := '';
-          classes.addClass(ADOQuery1);
-        except
-        end;
-
-
-        sql := 'SELECT * from tb_class_'+classIDList[j];
-        ado2.SelectInfo(ADOQuery2, sql);
-        while not ADOQuery2.eof do
-        begin
-          stu.classID := classIDList[j];
-          stu.stuID := ADOQuery2.FieldByName('stuID').AsString;
-          stu.stuName := ADOQuery2.FieldByName('stuName').AsString;
-          stu.sex := ADOQuery2.FieldByName('stuSex').AsString;
-          stu.age := ADOQuery2.FieldByName('stuAge').AsInteger;
-          stu.addStu(ADOQuery1);
-          ADOQuery2.Next;
-        end;
-      end;
+      exam.examName := ADOQuery.FieldByName('examName').AsString;
+      exam.examGrade := ADOQuery.FieldByName('examGrade').AsString;
+      exam.delExam(keepStu);
+      ADOQuery.Next;
     end;
 
-    setConnString;
-  end;
-
-  procedure Database.initDao(year:integer);
-  var
-    path : string;
-    softPath : string;
-    newDatabaseName : string;
-    oldDatabaseName : string;
-  begin
-    softPath := ExtractFileDir(ParamStr(0));      //获取软件本身所在路径，用于文件操作
-    newDatabaseName := inttostr(year)+'-'+inttostr(year+1);
-    oldDatabaseName := inttostr(year-1)+'-'+inttostr(year);
-
-    path := softPath + '\database\' + newDatabaseName;
-    if (FileExists(path+'.accdb')) then
-    begin
-      path := 'database\' + newDatabaseName+'.accdb';
-    end else if (FileExists(path+'.mdb')) then
-    begin
-      path := 'database\' + newDatabaseName+'.mdb';
-    end;
-    ado1.initConnStr(path);       //全局变量连接串
-
-    path := softPath + '\database\' + oldDatabaseName;
-    if (FileExists(path+'.accdb')) then
-    begin
-      path := 'database\' + oldDatabaseName+'.accdb';
-    end else if (FileExists(path+'.mdb')) then
-    begin
-      path := 'database\' + oldDatabaseName+'.mdb';
-    end;
-    ado2.setConnStr(path);        //局部变量连接串
+    exam.examName := '期末';
+    exam.examGrade := '111111111';
+    exam.addExam();
   end;
 
   procedure Database.saveConnString();
   begin
     connString := ADOOperate.connStr;
-  end;
-
-  procedure Database.setConnString();
-  begin
-    ADOOperate.connStr := connString;
   end;
 
 end.

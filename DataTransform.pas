@@ -13,6 +13,7 @@ type
     function GradeToClassID(grade : integer):integer;
     function classIDToText(classID : string):string;
     function numToText(num : integer):string;
+    function TextToNum(Text : string):integer;
 end;
 
 implementation
@@ -98,4 +99,18 @@ implementation
     end;
   end;
 
+
+
+  function CTransform.TextToNum(Text : string):integer;
+  begin
+    if comparestr('一',Text) = 0 then result := 1;
+    if comparestr('二',Text) = 0 then result := 2;
+    if comparestr('三',Text) = 0 then result := 3;
+    if comparestr('四',Text) = 0 then result := 4;
+    if comparestr('五',Text) = 0 then result := 5;
+    if comparestr('六',Text) = 0 then result := 6;
+    if comparestr('七',Text) = 0 then result := 7;
+    if comparestr('八',Text) = 0 then result := 8;
+    if comparestr('九',Text) = 0 then result := 9;
+  end;
 end.

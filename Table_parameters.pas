@@ -13,7 +13,7 @@ type
   public
     procedure getPar();
     procedure getGradePar(var ADOQuery : TADOQuery);
-    procedure changePar(AWB, AWT, ALB, ALT, dev1, greatRatio1 : real; grade : integer);
+    procedure changePar(AWB, AWT, ALB, ALT, averWenNo,averWenYes,averLiNo,averLiYes, dev1, greatRatio1 ,GW,IW: real; grade : integer);
   end;
 implementation
   Constructor Tb_parameters.create;
@@ -28,7 +28,7 @@ implementation
     ADOQuery : TADOQuery;
   begin
     ADOQuery := TADOQuery.Create(nil);
-    sql := 'SELECT averWenBase, averWenTop, averLiBase, averLiTop, dev, greatRatio, yearBegin '+
+    sql := 'SELECT averWenBase, averWenTop, averLiBase, averLiTop, dev, greatRatio, yearBegin, averWenNo,averWenYes,averLiNo,averLiYes '+
         ' from tb_parameters where grade = 0';
     ado.SelectInfo(ADOQuery, sql);
 
@@ -50,26 +50,36 @@ implementation
                  ' averWenTop  as 文科平均分上界, '+
                  ' averLiBase  as 理科平均分下界, '+
                  ' averLiTop   as 理科平均分上界, '+
+                 ' averWenNo   as 文科均分否决, '+
+                 ' averWenYes  as 文科均分肯定, '+
+                 ' averLiNo    as 理科均分否决, '+
+                 ' averLiYes   as 理科均分肯定, '+
                  ' dev         as 标准差评估差值, '+
-                 ' greatRatio  as 优生率评估差值  '+
+                 ' greatRatio  as 优生率评估差值, '+
+                 ' greatWeight as 优生占比, '+
+                 ' inferiorWeight  as 学困占比 '+
         ' from tb_parameters where grade <> 0';
     ado.SelectInfo(ADOQuery, sql);
   end;
 
-  procedure Tb_parameters.changePar(AWB, AWT, ALB, ALT, dev1, greatRatio1 : real; grade : integer);
+  procedure Tb_parameters.changePar(AWB, AWT, ALB, ALT,averWenNo,averWenYes,averLiNo,averLiYes, dev1, greatRatio1,GW,IW : real; grade : integer);
   var
     sql :string;
-    ADOQuery : TADOQuery;
   begin
-    ADOQuery := TADOQuery.Create(nil);
     sql := 'update tb_parameters set '+
         ' averWenBase = ' + floattostr(AWB)             + ',' +
         ' averWenTop  = ' + floattostr(AWT)             + ',' +
         ' averLiBase  = ' + floattostr(ALB)             + ',' +
         ' averLiTop   = ' + floattostr(ALT)             + ',' +
+        ' averWenNo   = ' + floattostr(averWenNo)       + ',' +
+        ' averWenYes  = ' + floattostr(averWenYes)      + ',' +
+        ' averLiNo    = ' + floattostr(averLiNo)        + ',' +
+        ' averLiYes   = ' + floattostr(averLiYes)       + ',' +
         ' dev         = ' + floattostr(dev1)            + ',' +
-        ' greatRatio  = ' + floattostr(greatRatio1)     +
+        ' greatRatio  = ' + floattostr(greatRatio1)     + ',' +
+        ' greatWeight = ' + floattostr(GW)              + ',' +
+        ' inferiorWeight  = ' + floattostr(IW)          +
         ' where grade = '+inttostr(grade);
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 end.

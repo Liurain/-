@@ -37,6 +37,7 @@ implementation
     end;
   end;
 
+  //导入课程
   procedure Input.course(path : string);
   var
     sql : string;
@@ -55,7 +56,7 @@ implementation
       course.courseName := ExcelApp.ActiveSheet.Cells[i,2];
       course.courseType := ExcelApp.ActiveSheet.Cells[i,3];
       try
-        course.addCourse(ADOQuery);
+        course.addCourse();
       except
 
       end;
@@ -64,6 +65,7 @@ implementation
     ExcelApp.quit;
   end;
 
+  //导入学生
   procedure Input.student(path : string);
   var
     sql : string;
@@ -72,6 +74,7 @@ implementation
     classes : Tb_classes;
     rowsCount : integer;
     classIDList : TStringList;
+    newClassIDList : TStringList;   //在导入学生的过程中新增加的班级
     trans : CTransform;
 
     classID : string;
@@ -80,6 +83,7 @@ implementation
     student := Tb_class.Create;
     classes := Tb_classes.Create;
     classIDList := TStringList.Create;
+    newClassIDList := TStringList.Create;
     trans := CTransform.Create;
     //获取数据库中所有班级号，用于判断班级是否存在
     classes.selectAll(ADOQuery);
@@ -112,20 +116,24 @@ implementation
           classes.stuNum := 0;
           classes.teacher := '';
           classes.grade := trans.classIDToGrade(classes.classID);
-          try
-            classes.addClass(ADOQuery);
-          except
+          if newClassIDList.IndexOf(classID) = -1 then
+          begin
+            try
+              classes.addClass();
+              newClassIDList.Add(classes.classID);
+            except
+            end;
           end;
         end else begin
           sql := 'delete * from tb_class_'+classID;
-          ado.ExecSqlStr(ADOQuery,sql);
+          ado.ExecSqlStr(sql);
           sql := 'update tb_classes set stuNum = 0 where classID=' + #39 + classID + #39;;
-          ado.ExecSqlStr(ADOQuery,sql);
+          ado.ExecSqlStr(sql);
         end;
       end;
 
       try
-        student.addStu(ADOQuery);
+        student.addStu();
       except
 
       end;
@@ -191,7 +199,7 @@ implementation
           scores.stuID := ExcelApp.ActiveSheet.Cells[i,1];
           scores.score := ExcelApp.ActiveSheet.Cells[i,j];
           try
-            scores.setScores(ADOQuery);
+            scores.setScores();
           except
 
           end;
@@ -226,7 +234,7 @@ implementation
       classes.teacher := ExcelApp.ActiveSheet.Cells[i,2];
       classes.grade := trans.classIDToGrade(classes.classID);
       try
-        classes.addClass(ADOQuery);
+        classes.addClass();
       except
 
       end;

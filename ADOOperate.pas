@@ -9,32 +9,30 @@ type
     TAdoOperate = class
     Constructor Create;
   private
-    databaseUser : string;
-    dataPsw : string;
-    connStr1 : string;
+    ADOQuery1 : TADOQuery;
   public
     procedure openConn();
     procedure closeConn();
     procedure SelectInfo(var ADOQuery:TADOQuery; sqlStr: string);
-    function ExecSqlStr(var ADOQuery:TADOQuery;sqlStr : string): integer;
-//    procedure importBegin();
-//    function importData(var ADOQuery:TADOQuery;sqlStr : string): integer;
-//    procedure importEnd();
+    function ExecSqlStr(sqlStr : string): integer;
     function testConn() : boolean;
     procedure initConnStr(path : string);
-    procedure setConnStr(path : string);     //这个使用私有连接串
+    procedure setConnStr(str : string);
+
+    procedure beginTrans();
+    function addSqlToTrans(sql : string): boolean;
+    function commitTrans():boolean;
 end;
 var
-  connStr : string;         //全局变量，数据库连接串
   ADOConn: TADOConnection;
+  connStr : string;
 
 
 implementation
 
 Constructor TAdoOperate.create;
 begin
-  ADOConn := TADOConnection.Create(nil);
-  connStr1 := '';
+  ADOQuery1 := TADOQuery.Create(nil);
 end;
 
 procedure TAdoOperate.initConnStr(path : string);
@@ -43,19 +41,43 @@ begin
         'Data Source=' + path + ';'+
         'Persist Security Info=False;'+
         'Jet OLEDB:Database Password=123456';
+  openConn();
 end;
 
-procedure TAdoOperate.setConnStr(path : string);
+procedure TAdoOperate.setConnStr(str : string);
 begin
-  connStr1 := 'Provider=Microsoft.ACE.OLEDB.12.0;'+
-        'Data Source=' + path + ';'+
-        'Persist Security Info=False'+
-        'Jet OLEDB:Database Password=123456';
+  connStr := str;
+  openConn();
+end;
+
+procedure TAdoOperate.beginTrans();
+begin
+  ADOConn.BeginTrans();
+end;
+
+function TAdoOperate.addSqlToTrans(sql : string): boolean;
+begin
+  try
+    ADOConn.Execute(sql);
+    result := true;
+  except
+    result := false;
+  end;
+end;
+
+function TAdoOperate.commiTtrans():boolean;
+begin
+  try
+    ADOConn.CommitTrans;
+    result := true;
+  except
+    ADOConn.RollbackTrans;
+    result := false;
+  end;
 end;
 
 function TAdoOperate.testConn() : boolean;
 begin
-  openConn();
   if ADOConn.Connected then
   begin
     result := true;
@@ -72,13 +94,8 @@ var
 begin
 // 联接access数据库
   if ADOConn.Connected  then  ADOConn.Close;
-  if Comparestr('',connStr1) = 0 then     //私有连接串为空时使用公有连接串
-  begin
-    ADOConn.ConnectionString := connStr;
-  end else begin
-    ADOConn.ConnectionString := connStr1;
-  end;
 
+  ADOConn.ConnectionString := connStr;
   ADOConn.KeepConnection := true;
   ADOConn.LoginPrompt := false;
   ADOConn.ConnectOptions := coAsyncConnect; //must be coAsyncConnect!
@@ -99,34 +116,33 @@ end;
 
 procedure TAdoOperate.SelectInfo(var ADOQuery:TADOQuery; sqlStr: string);
 begin
-  openConn();
   try
     ADOQuery.Connection := ADOConn; //意思是ADOQuery连接数据库时用ADOConnection建立好的连接。
     ADOQuery.SQL.Text := sqlStr;
     ADOQuery.Open; //执行查询，如果是增、删、改则用pADOQ.ExecSQL
   finally
-    ADOQuery.Close;
-    closeConn();
+//    ADOQuery.Close;
+//    closeConn();
     ADOQuery.Active := true;
   end;
 end;
 
-
-
-function TAdoOperate.ExecSqlStr(var ADOQuery:TADOQuery; sqlStr : String): integer;
+function TAdoOperate.ExecSqlStr(sqlStr : String): integer;
 begin
-  openConn();
   try
     result := 0;
-    ADOQuery.Connection := ADOConn;
-    ADOQuery.Close;
-    ADOQuery.SQL.Clear;
-    ADOQuery.SQL.Add(sqlStr);
-    result := ADOQuery.ExecSQL;  ////执行增、删、改
+    ADOQuery1.Connection := ADOConn;
+    ADOQuery1.Close;
+    ADOQuery1.SQL.Clear;
+    ADOQuery1.SQL.Add(sqlStr);
+    result := ADOQuery1.ExecSQL;  ////执行增、删、改
   finally
-    ADOQuery.Close;
-    closeConn();
+//    ADOQuery1.Close;
+//    closeConn();
   end;
 end;
 
+initialization
+
+  ADOConn := TADOConnection.Create(nil);
 end.

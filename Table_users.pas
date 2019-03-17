@@ -87,7 +87,7 @@ implementation
       sql := 'update tb_users set '+
         ' psw = ' + #39 + newPsw + #39 +
         ' where users=' + #39 + userName + #39;
-      ado.ExecSqlStr(ADOQuery, sql);
+      ado.ExecSqlStr(sql);
       result := 1;
     end;
   end;
@@ -100,6 +100,7 @@ implementation
         ' psw as 密码,'+
         ' power as 权限'+
         ' from tb_users'+
+        ' where users <> '+#39+'admin'+#39+
         ' order by users asc';
     ado.SelectInfo(ADOQuery, sql);
   end;
@@ -108,13 +109,22 @@ implementation
   var
     sql : string;
   begin
+    //判断数据库中是否存在该用户
+    sql := 'select * from tb_users where users = '+#39+userName+#39;
+    ado.SelectInfo(ADOQuery, sql);
+    if ADOQuery.RecordCount <> 0 then
+    begin
+      showmessage('数据库中已存在用户'+userName);
+      exit;
+    end;
+
     sql := 'INSERT INTO tb_users(users, psw, userIdentity, power) '+
         ' Values(' + #39 + userName +#39 +','+
                      #39 + password +#39 +','+
                      '1, '+       //1表示身份为成绩录入人员
                      #39 + power+#39 +')';
 
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 
   procedure Tb_users.changeUser(var ADOQuery : TADOQuery);
@@ -125,7 +135,7 @@ implementation
         ' psw= ' + #39 + password +#39 +','+
         ' power=' + #39 + power+#39 +
         ' where userName=' + #39 + userName + #39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 
   procedure Tb_users.delUser(var ADOQuery : TADOQuery);
@@ -134,7 +144,7 @@ implementation
   begin
     sql := 'DELETE FROM tb_users' +
         ' WHERE users ='+#39 + userName +#39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 
 end.

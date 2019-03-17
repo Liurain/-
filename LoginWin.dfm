@@ -1,7 +1,7 @@
 object Form3: TForm3
   Left = 0
   Top = 0
-  Caption = #33606#24030#24066#23454#39564#23567#23398#25104#32489#31649#29702#31995#32479
+  Caption = #33606#24030#23454#39564#23567#23398#25104#32489#31649#29702#31995#32479
   ClientHeight = 319
   ClientWidth = 535
   Color = clBtnFace
@@ -76,7 +76,6 @@ object Form3: TForm3
       Width = 265
       Height = 21
       TabOrder = 1
-      Text = 'admin'
     end
     object psw_Edit: TEdit
       Left = 152
@@ -85,7 +84,6 @@ object Form3: TForm3
       Height = 21
       PasswordChar = '*'
       TabOrder = 2
-      Text = '123'
     end
     object dataPath_ComboBox: TComboBox
       Left = 152
@@ -94,6 +92,7 @@ object Form3: TForm3
       Height = 21
       Style = csDropDownList
       TabOrder = 3
+      OnDropDown = dataPath_ComboBoxDropDown
     end
     object creatDatabase_btn: TButton
       Left = 89

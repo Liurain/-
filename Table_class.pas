@@ -10,7 +10,7 @@ type
     Constructor Create;
   private
     ado : TAdoOperate;      //数据库操作对象
-    procedure changeScoreTable(flag : integer;var ADOQuery : TADOQuery);
+    procedure changeScoreTable(flag : integer);
   public
     classID : string;       //班号
     stuID :string;          //学号
@@ -19,9 +19,9 @@ type
     age : integer;          //学生年龄
 
     procedure getStu(var ADOQuery : TADOQuery);
-    procedure addStu(var ADOQuery : TADOQuery);
-    procedure changeStu(var ADOQuery : TADOQuery);
-    procedure delStu(var ADOQuery : TADOQuery);
+    procedure addStu();
+    procedure changeStu();
+    procedure delStu();
   end;
 
 implementation
@@ -62,16 +62,18 @@ implementation
           sex        性别
           age        年龄
   }
-  procedure Tb_class.addStu(var ADOQuery : TADOQuery);
+  procedure Tb_class.addStu();
   var
     sql :string;
+    ADOQuery : TADOQuery;
   begin
+    ADOQuery := TADOQuery.Create(nil);
     //判断数据库中是否存在该学生
     sql := 'select * from tb_class_'+classID+' where stuID = '+#39+stuID+#39;
     ado.SelectInfo(ADOQuery, sql);
     if ADOQuery.RecordCount <> 0 then
     begin
-      showmessage('数据库中已存学生：'+stuID+'   '+stuName);
+      showmessage('数据库中已存在学生：'+stuID+'   '+stuName);
       exit;
     end;
     //向学生花名册中增加一条记录
@@ -80,12 +82,12 @@ implementation
           #39 + stuName + #39 + ',' +
           #39 + sex + #39 +','+
           #39 + inttostr(age) + #39 +')';
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
     //该班级学生人数加一
     sql := 'update tb_classes set stuNum=stuNum + 1 where classID='+#39+classID+#39;
-    ado.ExecSqlStr(ADOQuery, sql);
-    //将学生所存在课程的课程表也增加一条记录
-    changeScoreTable(0, ADOQuery);  //0表示增加一条记录
+    ado.ExecSqlStr(sql);
+    //将学生所存在课程的成绩表也增加一条记录
+    changeScoreTable(0);  //0表示增加一条记录
   end;
 
 
@@ -98,7 +100,7 @@ implementation
           sex        性别
           age        年龄
   }
-  procedure Tb_class.changeStu(var ADOQuery : TADOQuery);
+  procedure Tb_class.changeStu();
   var
     sql :string;
   begin
@@ -108,7 +110,7 @@ implementation
         ' stuSex  = ' + #39 + sex     + #39 + ',' +
         ' stuAge  = ' + inttostr(age) +
         ' where stuID=' + #39 + stuID + #39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 
 
@@ -117,29 +119,31 @@ implementation
       预先设定参数：
           stuID       学号
   }
-  procedure Tb_class.delStu(var ADOQuery : TADOQuery);
+  procedure Tb_class.delStu();
   var
     sql :string;
   begin
     sql := 'DELETE FROM tb_class_' + classID +
         ' WHERE stuID = '+#39+stuID+#39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
     //该班级学生人数减一
     sql := 'update tb_classes set stuNum=stuNum - 1 where classID='+#39+classID+#39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
 
     //将学生所存在课程的课程表也删除一条记录
-    changeScoreTable(1, ADOQuery);  //1表示删除一条记录
+    changeScoreTable(1);  //1表示删除一条记录
   end;
 
-  procedure Tb_class.changeScoreTable(flag : integer;var ADOQuery : TADOQuery);
+  procedure Tb_class.changeScoreTable(flag : integer);
   var
     sql : string;
     courseList : TStringList;
     transform : CTransform;
     grade : integer;
     i : integer;
+    ADOQuery : TADOQuery;
   begin
+    ADOQuery := TADOQuery.Create(nil);
     courseList := TStringList.Create;
     transform := CTransform.Create;
     grade := transform.classIDToGrade(classID);
@@ -166,7 +170,7 @@ implementation
         end;
       end;
 
-      ado.ExecSqlStr(ADOQuery, sql);
+      ado.ExecSqlStr(sql);
     end;
   end;
 

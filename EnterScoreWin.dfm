@@ -1,7 +1,7 @@
 object Form2: TForm2
   Left = 0
   Top = 0
-  Caption = #33606#24030#24066#23454#39564#23567#23398#25104#32489#31649#29702#31995#32479'--'#25104#32489#24405#20837
+  Caption = #33606#24030#23454#39564#23567#23398#25104#32489#31649#29702#31995#32479'--'#25104#32489#24405#20837
   ClientHeight = 565
   ClientWidth = 878
   Color = clBtnHighlight
@@ -11,6 +11,7 @@ object Form2: TForm2
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   OnShow = FormShow
@@ -24,7 +25,7 @@ object Form2: TForm2
     TabOrder = 0
     object Label2: TLabel
       Left = 22
-      Top = 194
+      Top = 159
       Width = 93
       Height = 23
       Caption = #23398'      '#21495#65306
@@ -63,7 +64,7 @@ object Form2: TForm2
     end
     object Label5: TLabel
       Left = 22
-      Top = 223
+      Top = 188
       Width = 93
       Height = 23
       Caption = #22995'      '#21517#65306
@@ -102,7 +103,7 @@ object Form2: TForm2
     end
     object Label6: TLabel
       Left = 21
-      Top = 254
+      Top = 219
       Width = 93
       Height = 23
       Caption = #25104'      '#32489#65306
@@ -115,23 +116,10 @@ object Form2: TForm2
     end
     object Label7: TLabel
       Left = 21
-      Top = 164
+      Top = 129
       Width = 95
       Height = 23
       Caption = #32771#35797#21517#31216#65306
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -19
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-    end
-    object Label4: TLabel
-      Left = 23
-      Top = 137
-      Width = 93
-      Height = 23
-      Caption = #23398'      '#26399#65306
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -19
@@ -182,7 +170,7 @@ object Form2: TForm2
     end
     object stuID_Edit: TEdit
       Left = 112
-      Top = 194
+      Top = 159
       Width = 121
       Height = 21
       Enabled = False
@@ -190,7 +178,7 @@ object Form2: TForm2
     end
     object stuName_Edit: TEdit
       Left = 112
-      Top = 221
+      Top = 186
       Width = 121
       Height = 21
       Enabled = False
@@ -198,7 +186,7 @@ object Form2: TForm2
     end
     object submit_btn: TButton
       Left = 22
-      Top = 285
+      Top = 250
       Width = 209
       Height = 39
       Caption = #25552#20132
@@ -207,7 +195,7 @@ object Form2: TForm2
     end
     object score_Edit: TEdit
       Left = 112
-      Top = 252
+      Top = 217
       Width = 121
       Height = 21
       TabOrder = 7
@@ -215,24 +203,12 @@ object Form2: TForm2
     end
     object examName_ComboBox: TComboBox
       Left = 112
-      Top = 166
+      Top = 132
       Width = 121
       Height = 21
       Style = csDropDownList
       TabOrder = 8
       OnChange = examName_ComboBoxChange
-    end
-    object term_ComboBox: TComboBox
-      Left = 112
-      Top = 137
-      Width = 121
-      Height = 21
-      Style = csDropDownList
-      TabOrder = 9
-      OnChange = term_ComboBoxChange
-      Items.Strings = (
-        #19978
-        #19979)
     end
   end
   object DBGrid1: TDBGrid

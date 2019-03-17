@@ -20,7 +20,7 @@ type
 
     procedure getScores(var ADOQuery : TADOQuery);
     procedure getScoresOfExam(orderType : string; var ADOQuery : TADOQuery);
-    procedure setScores(var ADOQuery : TADOQuery);
+    procedure setScores();
 end;
 
 implementation
@@ -56,13 +56,13 @@ implementation
 
   end;
 
-  procedure Tb_scores.setScores(var ADOQuery : TADOQuery);
+  procedure Tb_scores.setScores();
   var
     sql :string;
   begin
     sql := 'update tb_scores_'+inttostr(grade)+'_'+courseName+ ' set '+
         exam+' = ' + floattostr(score)  +
         ' where stuID=' + #39 + stuID + #39;
-    ado.ExecSqlStr(ADOQuery, sql);
+    ado.ExecSqlStr(sql);
   end;
 end.

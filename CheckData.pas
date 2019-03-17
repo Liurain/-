@@ -70,8 +70,8 @@ implementation
 
     if classID = '' then
     begin
-      //允许班级为默认值（空）
-      result := classID;
+      showmessage('班号不可以为空。');
+      flag := false;
       exit;
     end else begin
       //判断班级格式是否正确
@@ -175,8 +175,8 @@ implementation
 
     if score = '' then
     begin
-      //允许班级人数为默认值（空）
-      result := 0;
+      showmessage('成绩不可以为空，若缺考请输入-1');
+      flag := false;
       exit;
     end;
 
@@ -189,9 +189,9 @@ implementation
       exit;
     end;
 
-    if (s<0) or (s>maxScore)  then
+    if (s<-1) or (s>maxScore)  then
     begin
-      showmessage('合法的参数应该在0-'+floattostr(maxScore)+'之间');
+      showmessage('合法的参数应该在-1~'+floattostr(maxScore)+'之间');
       flag := false;
       exit;
     end;
@@ -272,6 +272,7 @@ implementation
     if Comparestr(ratio,'') = 0 then
     begin
       showmessage('优生率参不可以为空');
+      flag := false;
       result := 0;
       exit;
     end;
@@ -321,6 +322,7 @@ implementation
     if Comparestr(courseName ,'') = 0 then
     begin
       showmessage('课程名不可以为空。');
+      flag := false;
     end else begin
       result := courseName;
     end;
@@ -334,6 +336,7 @@ implementation
     if Comparestr(stuName ,'') = 0 then
     begin
       showmessage('学生姓名不可以为空。');
+      flag := false;
     end else begin
       result := stuName;
     end;

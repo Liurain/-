@@ -33,25 +33,25 @@ type
     score_Edit: TEdit;
     Label7: TLabel;
     examName_ComboBox: TComboBox;
-    Label4: TLabel;
-    term_ComboBox: TComboBox;
+//    term_ComboBox: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure grade_ComboBoxChange(Sender: TObject);
     procedure courseAndCalss_ComboBoxChange(Sender: TObject);
     procedure DBGrid1CellClick(Column: TColumn);
     procedure submit_btnClick(Sender: TObject);
-    procedure term_ComboBoxChange(Sender: TObject);
     procedure examName_ComboBoxChange(Sender: TObject);
     procedure orderByName_ComboBoxChange(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure score_EditKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     check : TCheckData;
     classes : Tb_classes;
     course : Tb_course;
     scores : Tb_scores;
+    exam : Tb_exam;
 
     dataFlag : boolean;  //界面显示控制参数，当界面上数据有填充过时dataFlag为true；
     procedure initForm();
@@ -62,16 +62,21 @@ type
     { Public declarations }
   end;
 
-var
-  Form2: TForm2;
+//var
+//  Form2: TForm2;
 
 implementation
 
 {$R *.dfm}
 
+procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  if GlobalData.enterScoreIdentity = 1 then  halt;                   //退出整个程序
+end;
+
 procedure TForm2.FormCreate(Sender: TObject);
 begin
-  control_Panel.Height := form2.Height;
+  control_Panel.Height := Height;
 
   dataFlag := false;
 
@@ -79,14 +84,15 @@ begin
   classes := Tb_classes.Create;
   course := Tb_course.Create;
   scores := Tb_scores.create;
+  exam := Tb_exam.Create;
 
   initForm();
 end;
 
 procedure TForm2.FormResize(Sender: TObject);
 begin
-  control_Panel.SetBounds(0, 0, control_Panel.Width, Form2.Height);
-  DBGrid1.SetBounds(control_Panel.Width+10,10,Form2.Width-20,Form2.Height-20);
+  control_Panel.SetBounds(0, 0, control_Panel.Width, Height);
+  DBGrid1.SetBounds(control_Panel.Width+5,10,Width- control_Panel.Width-20,Height-50);
 end;
 
 procedure TForm2.FormShow(Sender: TObject);
@@ -117,7 +123,7 @@ procedure TForm2.initForm();
 begin
   classID_ComboBox.ItemIndex := -1;
   course_ComboBox.ItemIndex := -1;
-  term_ComboBox.ItemIndex := -1;
+//  term_ComboBox.ItemIndex := -1;
   examName_ComboBox.ItemIndex := -1;
   stuID_Edit.Text := '';
   stuName_Edit.Text := '';
@@ -125,7 +131,7 @@ begin
 
   classID_ComboBox.Enabled := false;
   course_ComboBox.Enabled := false;
-  term_ComboBox.Enabled := false;
+//  term_ComboBox.Enabled := false;
   orderByName_ComboBox.Enabled := false;
   examName_ComboBox.Enabled := false;
   stuID_Edit.Enabled := false;
@@ -165,7 +171,7 @@ begin
     scores.getScores(ADOQuery);
 
     orderByName_ComboBox.Enabled := true;
-    term_ComboBox.Enabled := true;
+//    term_ComboBox.Enabled := true;
   end;
 end;
 
@@ -179,7 +185,7 @@ end;
 
 procedure TForm2.examName_ComboBoxChange(Sender: TObject);
 var
-  term : string;
+//  term : string;
   orderType : string;  //排序方式
   flag : boolean;
 begin
@@ -189,8 +195,8 @@ begin
     scores.grade := grade_ComboBox.ItemIndex+1;
     scores.courseName := course_ComboBox.Text;
     scores.classID := classID_ComboBox.Text;
-    term := check.term(term_ComboBox.ItemIndex, flag);
-    scores.exam := examName_ComboBox.Text + '_' + term;
+//    term := check.term(term_ComboBox.ItemIndex, flag);
+    scores.exam := examName_ComboBox.Text;
     if Comparestr('学号',orderByName_ComboBox.Text)=0 then
     begin
       orderType := 'stuID';
@@ -214,6 +220,7 @@ begin
   if 13=key then //13 是回车
   begin
     submit_btnClick(Sender);
+    score_Edit.text := '';
   end;
 end;
 
@@ -221,7 +228,7 @@ procedure TForm2.setDate();
 begin
   stuID_Edit.Text := ADOQuery.FieldByName('学号').AsString;
   stuName_Edit.Text := ADOQuery.FieldByName('姓名').AsString;
-  score_Edit.Text := ADOQuery.FieldByName('分数').AsString;
+  score_Edit.Text := '';
 end;
 
 procedure TForm2.grade_ComboBoxChange(Sender: TObject);
@@ -255,8 +262,17 @@ begin
     ADOQuery.Next;
   end;
 
+  exam.selectExamName(grade, ADOQuery);
+  examName_ComboBox.Items.Clear;
+  while not ADOQuery.eof do
+  begin
+    examName_ComboBox.Items.Add(ADOQuery.FieldByName('考试名称').AsString);
+    ADOQuery.Next;
+  end;
+
   classID_ComboBox.Enabled := true;
   course_ComboBox.Enabled := true;
+  examName_ComboBox.Enabled := true;
 end;
 
 procedure TForm2.submit_btnClick(Sender: TObject);
@@ -273,47 +289,45 @@ begin
   if flag then
   begin
     row := DBGrid1.DataSource.DataSet.RecNo;
-    scores.setScores(ADOQuery);
+    scores.setScores();
     examName_ComboBoxChange(Sender);
     DBGrid1.DataSource.DataSet.RecNo := row+1;     //记录下移一行
     setDate();
   end;
-
-
 end;
 
-procedure TForm2.term_ComboBoxChange(Sender: TObject);
-var
-  grade : integer;
-  term : string;
-  flag : boolean;
-
-  exam : Tb_exam;
-begin
-  flag := true;
-  exam := Tb_exam.Create;
-
-  grade := grade_ComboBox.ItemIndex+1;
-  term  := check.term(term_ComboBox.ItemIndex, flag);
-  if flag then
-  begin
-    exam.selectExamName(grade, term, ADOQuery);
-    examName_ComboBox.Items.Clear;
-    while not ADOQuery.eof do
-    begin
-      examName_ComboBox.Items.Add(ADOQuery.FieldByName('考试名称').AsString);
-      ADOQuery.Next;
-    end;
-  end;
-
-  if dataFlag then      //如果录入成绩参数设置好，只是改变部分参数，则不对其他参数进行设置
-  begin
-    examName_ComboBox.ItemIndex := -1;
-    stuID_Edit.Text := '';
-    stuName_Edit.Text := '';
-    score_Edit.Text := '';
-  end;
-  examName_ComboBox.Enabled := true;
-end;
+//procedure TForm2.term_ComboBoxChange(Sender: TObject);
+//var
+//  grade : integer;
+////  term : string;
+////  flag : boolean;
+//
+//  exam : Tb_exam;
+//begin
+////  flag := true;
+//  exam := Tb_exam.Create;
+//
+//  grade := grade_ComboBox.ItemIndex+1;
+////  term  := check.term(term_ComboBox.ItemIndex, flag);
+////  if flag then
+////  begin
+//    exam.selectExamName(grade, ADOQuery);
+//    examName_ComboBox.Items.Clear;
+//    while not ADOQuery.eof do
+//    begin
+//      examName_ComboBox.Items.Add(ADOQuery.FieldByName('考试名称').AsString);
+//      ADOQuery.Next;
+//    end;
+////  end;
+//
+//  if dataFlag then      //如果录入成绩参数设置好，只是改变部分参数，则不对其他参数进行设置
+//  begin
+//    examName_ComboBox.ItemIndex := -1;
+//    stuID_Edit.Text := '';
+//    stuName_Edit.Text := '';
+//    score_Edit.Text := '';
+//  end;
+//  examName_ComboBox.Enabled := true;
+//end;
 
 end.

@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = #33606#24030#24066#23454#39564#23567#23398#25104#32489#31649#29702#31995#32479'--'#31649#29702#21592
+  Caption = #33606#24030#23454#39564#23567#23398#25104#32489#31649#29702#31995#32479'--'#31649#29702#21592
   ClientHeight = 587
   ClientWidth = 870
   Color = clBtnHighlight
@@ -12,16 +12,43 @@ object Form1: TForm1
   Font.Style = []
   Menu = MainMenu1
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
+  object Label51: TLabel
+    Left = 25
+    Top = 173
+    Width = 132
+    Height = 23
+    Caption = #24179' '#22343' '#20998' '#21542#20915#65306
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -19
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Label52: TLabel
+    Left = 16
+    Top = 277
+    Width = 132
+    Height = 23
+    Caption = #24179' '#22343' '#20998' '#21542#20915#65306
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -19
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
   object PageControl1: TPageControl
     Left = 0
     Top = 2
     Width = 313
     Height = 577
-    ActivePage = parPage
+    ActivePage = databasePage
     TabOrder = 0
     object classPage: TTabSheet
       Caption = #29677#32423#31649#29702
@@ -30,6 +57,7 @@ object Form1: TForm1
         Top = 65
         Width = 274
         Height = 145
+        BevelOuter = bvNone
         TabOrder = 0
         object Label2: TLabel
           Left = 15
@@ -157,6 +185,7 @@ object Form1: TForm1
         Top = 52
         Width = 235
         Height = 190
+        BevelOuter = bvNone
         TabOrder = 0
         object Label6: TLabel
           Left = 8
@@ -308,11 +337,12 @@ object Form1: TForm1
         Left = 3
         Top = 49
         Width = 246
-        Height = 192
+        Height = 256
+        BevelOuter = bvNone
         TabOrder = 0
         object Label12: TLabel
           Left = 24
-          Top = 68
+          Top = 92
           Width = 75
           Height = 23
           Caption = #23398'   '#21495#65306
@@ -325,7 +355,7 @@ object Form1: TForm1
         end
         object Label13: TLabel
           Left = 24
-          Top = 97
+          Top = 121
           Width = 75
           Height = 23
           Caption = #22995'   '#21517#65306
@@ -338,7 +368,7 @@ object Form1: TForm1
         end
         object Label14: TLabel
           Left = 24
-          Top = 126
+          Top = 150
           Width = 75
           Height = 23
           Caption = #24615'   '#21035#65306
@@ -351,7 +381,7 @@ object Form1: TForm1
         end
         object Label15: TLabel
           Left = 24
-          Top = 155
+          Top = 179
           Width = 75
           Height = 23
           Caption = #24180'   '#40836#65306
@@ -388,9 +418,22 @@ object Form1: TForm1
           Font.Style = []
           ParentFont = False
         end
+        object Label45: TLabel
+          Left = 24
+          Top = 65
+          Width = 75
+          Height = 23
+          Caption = #20154'   '#25968#65306
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
         object stu_sex_ComboBox: TComboBox
           Left = 105
-          Top = 126
+          Top = 150
           Width = 128
           Height = 21
           Style = csDropDownList
@@ -403,14 +446,14 @@ object Form1: TForm1
         end
         object stu_stuID_Edit: TEdit
           Left = 105
-          Top = 68
+          Top = 92
           Width = 128
           Height = 21
           TabOrder = 1
         end
         object stu_name_Edit: TEdit
           Left = 105
-          Top = 97
+          Top = 121
           Width = 128
           Height = 21
           TabOrder = 2
@@ -445,7 +488,7 @@ object Form1: TForm1
         end
         object stu_age_ComboBox: TComboBox
           Left = 105
-          Top = 155
+          Top = 179
           Width = 128
           Height = 21
           TabOrder = 5
@@ -460,10 +503,18 @@ object Form1: TForm1
             '13'
             '14')
         end
+        object stu_stuNum_Edit: TEdit
+          Left = 105
+          Top = 65
+          Width = 128
+          Height = 21
+          Enabled = False
+          TabOrder = 6
+        end
       end
       object stu_submit_btn: TButton
         Left = 27
-        Top = 247
+        Top = 327
         Width = 209
         Height = 39
         Caption = #25552#20132
@@ -490,9 +541,10 @@ object Form1: TForm1
       ImageIndex = 3
       object Panel1: TPanel
         Left = 3
-        Top = 3
+        Top = 0
         Width = 299
-        Height = 342
+        Height = 497
+        BevelOuter = bvNone
         TabOrder = 0
         object Label7: TLabel
           Left = 9
@@ -522,10 +574,10 @@ object Form1: TForm1
         end
         object Label11: TLabel
           Left = 9
-          Top = 157
-          Width = 114
+          Top = 266
+          Width = 132
           Height = 23
-          Caption = #26631#20934#24046#21442#25968#65306
+          Caption = #26631' '#20934' '#24046' '#21442#25968#65306
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -19
@@ -535,10 +587,10 @@ object Form1: TForm1
         end
         object Label33: TLabel
           Left = 9
-          Top = 186
-          Width = 114
+          Top = 295
+          Width = 133
           Height = 23
-          Caption = #20248#29983#29575#21442#25968#65306
+          Caption = #20248' '#29983' '#29575' (%) '#65306
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -19
@@ -598,6 +650,84 @@ object Form1: TForm1
           Font.Style = []
           ParentFont = False
         end
+        object Label43: TLabel
+          Left = 9
+          Top = 320
+          Width = 134
+          Height = 23
+          Caption = #20248#29983#21344#27604'(%) '#65306
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Label44: TLabel
+          Left = 9
+          Top = 349
+          Width = 128
+          Height = 23
+          Caption = #23398#22256#21344#27604'(%) : '
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Label49: TLabel
+          Left = 9
+          Top = 157
+          Width = 133
+          Height = 23
+          Caption = #25991#31185#22343#20998#21542#20915#65306
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Label37: TLabel
+          Left = 9
+          Top = 240
+          Width = 133
+          Height = 23
+          Caption = #29702#31185#22343#20998#32943#23450#65306
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Label53: TLabel
+          Left = 7
+          Top = 184
+          Width = 133
+          Height = 23
+          Caption = #25991#31185#22343#20998#32943#23450#65306
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Label54: TLabel
+          Left = 9
+          Top = 211
+          Width = 133
+          Height = 23
+          Caption = #29702#31185#22343#20998#21542#20915#65306
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
         object par_averLi_base_Edit: TEdit
           Left = 137
           Top = 130
@@ -605,16 +735,16 @@ object Form1: TForm1
           Height = 21
           TabOrder = 0
         end
-        object par_dev_base_Edit: TEdit
+        object par_dev_Edit: TEdit
           Left = 137
-          Top = 157
+          Top = 266
           Width = 140
           Height = 21
           TabOrder = 1
         end
-        object par_greatRatio_base_Edit: TEdit
+        object par_greatRatio_Edit: TEdit
           Left = 137
-          Top = 188
+          Top = 297
           Width = 140
           Height = 21
           TabOrder = 2
@@ -643,7 +773,7 @@ object Form1: TForm1
         object par_grade_ComboBox: TComboBox
           Left = 137
           Top = 72
-          Width = 145
+          Width = 140
           Height = 21
           Style = csDropDownList
           TabOrder = 6
@@ -658,15 +788,57 @@ object Form1: TForm1
             #20843#24180#32423
             #20061#24180#32423)
         end
-      end
-      object par_submit_btn: TButton
-        Left = 37
-        Top = 376
-        Width = 209
-        Height = 39
-        Caption = #25552#20132
-        TabOrder = 1
-        OnClick = par_submit_btnClick
+        object par_greatWeight_Edit: TEdit
+          Left = 137
+          Top = 324
+          Width = 140
+          Height = 21
+          TabOrder = 7
+        end
+        object par_inferiorWeight_Edit: TEdit
+          Left = 137
+          Top = 351
+          Width = 140
+          Height = 21
+          TabOrder = 8
+        end
+        object par_averWenNo_Edit: TEdit
+          Left = 137
+          Top = 157
+          Width = 140
+          Height = 21
+          TabOrder = 9
+        end
+        object par_averLiYes_Edit: TEdit
+          Left = 137
+          Top = 238
+          Width = 140
+          Height = 21
+          TabOrder = 10
+        end
+        object par_averWenYes_Edit: TEdit
+          Left = 137
+          Top = 184
+          Width = 140
+          Height = 21
+          TabOrder = 11
+        end
+        object par_averLiNo_Edit: TEdit
+          Left = 137
+          Top = 211
+          Width = 140
+          Height = 21
+          TabOrder = 12
+        end
+        object par_submit_btn: TButton
+          Left = 34
+          Top = 412
+          Width = 209
+          Height = 39
+          Caption = #25552#20132
+          TabOrder = 13
+          OnClick = par_submit_btnClick
+        end
       end
     end
     object outputPage: TTabSheet
@@ -674,9 +846,10 @@ object Form1: TForm1
       ImageIndex = 4
       object Panel2: TPanel
         Left = 3
-        Top = -5
+        Top = 1
         Width = 302
         Height = 481
+        BevelOuter = bvNone
         TabOrder = 0
         object report_submit_btn: TButton
           Left = 48
@@ -687,11 +860,12 @@ object Form1: TForm1
           TabOrder = 0
           OnClick = report_submit_btnClick
         end
-        object Panel3: TPanel
-          Left = 0
-          Top = 5
+        object fileOutputPanel: TPanel
+          Left = -3
+          Top = 0
           Width = 292
-          Height = 236
+          Height = 324
+          BevelOuter = bvNone
           TabOrder = 1
           object Label23: TLabel
             Left = 13
@@ -708,7 +882,7 @@ object Form1: TForm1
           end
           object Label24: TLabel
             Left = 13
-            Top = 71
+            Top = 191
             Width = 93
             Height = 23
             Caption = #24180'      '#32423#65306
@@ -721,7 +895,7 @@ object Form1: TForm1
           end
           object Label25: TLabel
             Left = 13
-            Top = 129
+            Top = 222
             Width = 93
             Height = 23
             Caption = #29677'      '#21495#65306
@@ -734,10 +908,10 @@ object Form1: TForm1
           end
           object Label26: TLabel
             Left = 13
-            Top = 102
-            Width = 93
+            Top = 91
+            Width = 95
             Height = 23
-            Caption = #31185'      '#30446#65306
+            Caption = #31185#30446#31867#22411#65306
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
             Font.Height = -19
@@ -747,7 +921,7 @@ object Form1: TForm1
           end
           object Label38: TLabel
             Left = 13
-            Top = 44
+            Top = 164
             Width = 95
             Height = 23
             Caption = #32771#35797#21517#31216#65306
@@ -758,31 +932,67 @@ object Form1: TForm1
             Font.Style = []
             ParentFont = False
           end
+          object Label46: TLabel
+            Left = 13
+            Top = 46
+            Width = 95
+            Height = 23
+            Caption = #25991#20214#31867#22411#65306
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -19
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label47: TLabel
+            Left = 13
+            Top = 249
+            Width = 95
+            Height = 23
+            Caption = #35838#31243#21517#31216#65306
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -19
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label48: TLabel
+            Left = 13
+            Top = 120
+            Width = 95
+            Height = 23
+            Caption = #36755#20986#33539#22260#65306
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -19
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+          end
           object report_type_ComboBox: TComboBox
             Left = 104
-            Top = 17
+            Top = 19
             Width = 137
             Height = 21
             Style = csDropDownList
             TabOrder = 0
             OnChange = report_type_ComboBoxChange
             Items.Strings = (
-              #26399#26411#35780#20272'              (word)'
-              #32771#35797#35780#20272'              (word)'
-              #23398#29983#25104#32489#32479#35745#34920'    (word)'
-              #21333#31185#25104#32489#34920'           (word)'
-              #23398#29983#25104#32489#32479#35745#34920'   (excel)'
-              #21333#31185#25104#32489#34920'          (excel)'
-              #25104#32489#24635#34920'              (excel)')
+              #30331#20998#34920
+              #25104#32489#34920
+              #26399#26411#35780#20272
+              #32771#35797#35780#20272)
           end
           object report_grade_ComboBox: TComboBox
             Left = 104
-            Top = 75
+            Top = 195
             Width = 137
             Height = 21
             Style = csDropDownList
             TabOrder = 1
-            OnChange = grade_ComboBoxChange
+            OnChange = report_grade_ComboBoxChange
             Items.Strings = (
               #19968#24180#32423
               #20108#24180#32423
@@ -796,35 +1006,81 @@ object Form1: TForm1
           end
           object report_classID_ComboBox: TComboBox
             Left = 104
-            Top = 129
+            Top = 222
             Width = 137
             Height = 21
             Style = csDropDownList
             TabOrder = 2
           end
-          object report_course_ComboBox: TComboBox
+          object report_courseType_ComboBox: TComboBox
             Left = 104
-            Top = 102
+            Top = 93
             Width = 137
             Height = 21
             Style = csDropDownList
             TabOrder = 3
+            OnChange = report_courseType_ComboBoxChange
+            Items.Strings = (
+              #20840#31185
+              #21333#31185)
           end
           object report_exam_ComboBox: TComboBox
             Left = 104
-            Top = 44
+            Top = 164
             Width = 137
             Height = 21
             Style = csDropDownList
             TabOrder = 4
+            OnChange = report_exam_ComboBoxChange
           end
           object visual_CheckBox: TCheckBox
-            Left = 96
-            Top = 192
+            Left = 40
+            Top = 292
             Width = 97
             Height = 17
             Caption = #29983#25104#25253#21578#21518#25171#24320
             TabOrder = 5
+          end
+          object fileprint_CheckBox: TCheckBox
+            Left = 168
+            Top = 292
+            Width = 97
+            Height = 17
+            Caption = #25171#21360#25991#20214
+            TabOrder = 6
+          end
+          object report_Filetype_ComboBox: TComboBox
+            Left = 104
+            Top = 46
+            Width = 137
+            Height = 21
+            Style = csDropDownList
+            TabOrder = 7
+            OnChange = report_Filetype_ComboBoxChange
+            Items.Strings = (
+              'Word'
+              'Excel')
+          end
+          object report_courseName_ComboBox: TComboBox
+            Left = 104
+            Top = 249
+            Width = 137
+            Height = 21
+            Style = csDropDownList
+            TabOrder = 8
+          end
+          object report_outPutLimits_ComboBox: TComboBox
+            Left = 104
+            Top = 120
+            Width = 137
+            Height = 21
+            Style = csDropDownList
+            TabOrder = 9
+            OnChange = report_outPutLimits_ComboBoxChange
+            Items.Strings = (
+              #20840#26657
+              #26576#19968#24180#32423
+              #26576#19968#29677#32423)
           end
         end
       end
@@ -833,10 +1089,11 @@ object Form1: TForm1
       Caption = 'AdminPage'
       ImageIndex = 5
       object userPanel: TPanel
-        Left = -4
-        Top = -5
+        Left = 15
+        Top = 0
         Width = 306
         Height = 534
+        BevelOuter = bvNone
         TabOrder = 0
         object Label27: TLabel
           Left = 20
@@ -941,9 +1198,10 @@ object Form1: TForm1
       ImageIndex = 6
       object Panel4: TPanel
         Left = 0
-        Top = 3
+        Top = -5
         Width = 305
         Height = 529
+        BevelOuter = bvNone
         TabOrder = 0
         object Label34: TLabel
           Left = 28
@@ -959,24 +1217,11 @@ object Form1: TForm1
           ParentFont = False
         end
         object Label35: TLabel
-          Left = 27
-          Top = 138
-          Width = 70
-          Height = 19
-          Caption = #32771#35797#26102#38388':'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -16
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
-        object Label37: TLabel
           Left = 28
           Top = 113
           Width = 70
           Height = 19
-          Caption = #32771#35797#23398#26399':'
+          Caption = #32771#35797#26102#38388':'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -16
@@ -999,8 +1244,8 @@ object Form1: TForm1
           OnClick = exam_operate_RGClick
         end
         object examTime_Edit: TEdit
-          Left = 103
-          Top = 140
+          Left = 104
+          Top = 115
           Width = 169
           Height = 21
           Enabled = False
@@ -1012,19 +1257,29 @@ object Form1: TForm1
           Width = 169
           Height = 21
           Enabled = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clSilver
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
           TabOrder = 2
+          Text = #35831#22635#20889#23613#37327#31616#30701#30340#27721#23383
+          OnClick = examName_EditClick
         end
         object Panel5: TPanel
-          Left = 11
-          Top = 163
+          Left = 12
+          Top = 138
           Width = 278
           Height = 185
+          BevelOuter = bvNone
           TabOrder = 3
           object examGradePanel: TPanel
             Left = 16
             Top = 79
             Width = 257
             Height = 97
+            BevelOuter = bvNone
             TabOrder = 0
             object examGrade8_CheckBox: TCheckBox
               Left = 97
@@ -1117,24 +1372,13 @@ object Form1: TForm1
           end
         end
         object exam_submit_btn: TButton
-          Left = 43
-          Top = 368
+          Left = 44
+          Top = 343
           Width = 241
           Height = 49
           Caption = #30830#35748
           TabOrder = 4
           OnClick = exam_submit_btnClick
-        end
-        object term_ComboBox: TComboBox
-          Left = 103
-          Top = 113
-          Width = 169
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 5
-          Items.Strings = (
-            #19978
-            #19979)
         end
       end
     end
@@ -1201,12 +1445,14 @@ object Form1: TForm1
         Top = 134
         Width = 278
         Height = 185
+        BevelOuter = bvNone
         TabOrder = 3
         object userPowerPanel: TPanel
           Left = 17
           Top = 74
           Width = 257
           Height = 97
+          BevelOuter = bvNone
           TabOrder = 0
           object userPower8_CheckBox: TCheckBox
             Left = 92
@@ -1316,6 +1562,7 @@ object Form1: TForm1
         Top = 0
         Width = 292
         Height = 193
+        BevelOuter = bvNone
         TabOrder = 0
         object Label18: TLabel
           Left = 13
@@ -1414,6 +1661,7 @@ object Form1: TForm1
         Top = 15
         Width = 292
         Height = 334
+        BevelOuter = bvNone
         TabOrder = 0
         object Label21: TLabel
           Left = 0
@@ -1421,6 +1669,19 @@ object Form1: TForm1
           Width = 75
           Height = 23
           Caption = #23398'   '#24180#65306
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -19
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object Label50: TLabel
+          Left = 0
+          Top = 46
+          Width = 75
+          Height = 23
+          Caption = #23398'   '#26399#65306
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -19
@@ -1437,7 +1698,7 @@ object Form1: TForm1
         end
         object keepBack_CheckBox: TCheckBox
           Left = 191
-          Top = 19
+          Top = 48
           Width = 97
           Height = 17
           Caption = #20445#30041#20197#24448#25968#25454
@@ -1446,9 +1707,10 @@ object Form1: TForm1
         end
         object Panel8: TPanel
           Left = 0
-          Top = 71
+          Top = 86
           Width = 289
           Height = 161
+          BevelOuter = bvNone
           TabOrder = 2
           object Label20: TLabel
             Left = 0
@@ -1493,9 +1755,9 @@ object Form1: TForm1
           object data_stu_CheckBox: TCheckBox
             Left = 32
             Top = 102
-            Width = 145
+            Width = 193
             Height = 17
-            Caption = #23398#29983#21517#20876'('#19981#21547#27605#19994#29677#65289
+            Caption = #23398#29983#21517#20876'('#36328#23398#24180#26102#19981#21547#27605#19994#29677#65289
             Enabled = False
             TabOrder = 3
           end
@@ -1508,6 +1770,18 @@ object Form1: TForm1
             Enabled = False
             TabOrder = 4
           end
+        end
+        object term_ComboBox: TComboBox
+          Left = 73
+          Top = 46
+          Width = 112
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 3
+          OnChange = term_ComboBoxChange
+          Items.Strings = (
+            #19978
+            #19979)
         end
       end
       object database_submit_btn: TButton
@@ -1526,6 +1800,7 @@ object Form1: TForm1
     Top = 21
     Width = 153
     Height = 187
+    BevelOuter = bvNone
     TabOrder = 1
   end
   object promptPanel: TPanel
@@ -1533,6 +1808,7 @@ object Form1: TForm1
     Top = 503
     Width = 408
     Height = 76
+    BevelOuter = bvNone
     TabOrder = 2
     object promptLabel: TLabel
       Left = 20
@@ -1553,7 +1829,7 @@ object Form1: TForm1
     Top = 128
     Width = 289
     Height = 297
-    ActivePage = TextSheet
+    ActivePage = TabSheet
     TabOrder = 3
     object TabSheet: TTabSheet
       Caption = 'TabSheet'
@@ -1652,13 +1928,6 @@ object Form1: TForm1
       Caption = #25968#25454#24211#31649#29702
       OnClick = database_MenuClick
     end
-  end
-  object WordApplication1: TWordApplication
-    AutoConnect = False
-    ConnectKind = ckRunningOrNew
-    AutoQuit = False
-    Left = 816
-    Top = 224
   end
   object OpenDialog1: TOpenDialog
     Left = 816
